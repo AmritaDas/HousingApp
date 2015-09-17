@@ -2177,4 +2177,390 @@ public class uha {
 			}
 		}while(mark != 0);
 	}
-}	
+
+	public void RequestParking(String app_id, String app_name, int user_type) throws SQLException
+	{
+		int alloted = 0,mark=0, choice = 0, submit=0;
+		String leaseNo="",vehicleType="",handicapped="",nearbyParking="", query="";
+		ResultSet rset= stmt.executeQuery("select lease_no from uha_lease where applicant_no = '" + app_id + "' and request_status in ('APPROVED','INPROGRESS')");
+		
+		while(rset.next())
+		{
+			alloted = 1;
+		}
+		rset.beforeFirst();
+		while(rset.next())
+		{
+			leaseNo = rset.getString(1);
+
+			//System.out.println("Lease request with number " + leaseNo);
+			//i++;
+		}
+	//CHECK IF HOUSE IS ALLOTED, set value of alloted, else  return if not alloted yet
+		if(alloted==0)
+		{
+			System.out.println("You need to have been alloted a house before requesting for a parking spot!");
+			return;
+		}
+		else
+		{
+			ResultSet r = stmt3.executeQuery("select count(*) from uha_parking_request where lease_no = '" + leaseNo + "' and request_status not in ('COMPLETE', 'DENIED')");
+			if(r.next()){
+				int c = Integer.parseInt(r.getString(1));
+				if(c>0) 
+					alloted = 2;
+			}
+			if(alloted !=2){
+				do
+				{
+					mark=0;
+					System.out.println("Enter Vehicle type \n 1. Bike\n 2. Small Car\n 3. Large Car\n");
+					try{
+						choice = Integer.parseInt(scn.next());
+					}
+					catch(Exception e){
+						System.out.println("Invalid choice. Try again. ");
+						mark = 1;
+					}
+					
+					if(mark != 1)
+					{
+						switch(choice)
+						{
+						case 1:
+							vehicleType = "BIKE";
+							break;
+						case 2:
+							vehicleType = "SMALL CAR";
+							break;
+						case 3:
+							vehicleType = "LARGE CAR";
+							break;
+						default:
+							System.out.println("Invalid choice. Try again. ");
+							mark = 1;
+							break;
+						}
+						
+					}
+				}while(mark!=0);
+				
+				System.out.println("Are you handicapped?(Y/N)");
+				handicapped = scn.next();
+				
+				System.out.println("Are you okay if the parking if not nearby?(Y/N)");
+				nearbyParking = scn.next();
+				
+				System.out.println("Click 1 to submit or 2 to go back");
+				submit = scn.nextInt();
+				
+				if(submit==2)
+					return;
+				else //if(submit==1)
+				{
+					try
+					{
+					query = "insert into uha_parking_request(lease_no,applicant_no,vehicle_type,not_near_housing_area_accepted,handicapped) values('" + leaseNo + "','" + app_id + "','" +vehicleType + "','" + nearbyParking + "','" + handicapped + "')";
+					stmt.executeUpdate(query);
+					System.out.println("Submitted Successfuly");
+					}
+					catch(Exception e)
+					{
+					 System.out.println("Insertion failed with error: \n" + e);
+					}
+				}
+			}
+			else
+				System.out.println("you already have a parking spot");
+			
+		}
+	}
+
+	public void ViewParkingRequestStatus(String app_id, String app_name, int user_type) throws SQLException
+	{
+		int alloted = 0,present=0;
+		String leaseNo ="";
+		ResultSet rset= stmt.executeQuery("select lease_no from uha_lease where applicant_no = '" + app_id + "' and request_status in ('APPROVED','INPROGRESS')");
+		
+		if(rset.next())
+		{
+			alloted = 1;
+			leaseNo = rset.getString(1);
+		}
+		if(alloted==1)
+		{
+			ResultSet rset1= stmt.executeQuery("select * from uha_parking_request where applicant_no = '" + app_id + "' and lease_no = '" + leaseNo + "'");
+			while(rset1.next())
+			{
+				present = 1;
+				System.out.println("Spot ID: " + rset1.getString(10));
+				String sd = rset1.getString(11)!=null?rset1.getString(11).substring(0, 11):" ";
+				System.out.println("Start Date: " + sd);
+				String ed = rset1.getString(12)!=null?rset1.getString(12).substring(0, 11):" ";
+				System.out.println("End Date: " + ed);
+				System.out.println("Request No: " + rset1.getString(1));
+				System.out.println("Lease No: " + rset1.getString(2));
+				System.out.println("Applicant No: " + rset1.getString(3));
+				System.out.println("Permit ID: " + rset1.getString(4));
+				System.out.println("Request Status: " + rset1.getString(5));
+				System.out.println("Vehicle type: " + rset1.getString(6));
+				System.out.println("Non-nearby parking spot accepted: " + rset1.getString(8));
+				System.out.println("Handicapped: " + rset1.getString(9));
+			}
+
+		}
+		if(present == 0)
+			System.out.println("You do not have any parking requests for active or approved leases");
+		System.out.println("\nPress 1 to continue");
+		String a = scn.next();
+
+	}
+
+	public void ViewCurrentParkingSpot(String app_id, String app_name, int user_type) throws SQLException
+	{
+		int alloted = 0,present=0;
+		String leaseNo ="";
+		ResultSet rset= stmt.executeQuery("select lease_no from uha_lease where applicant_no = '" + app_id + "' and request_status in ('APPROVED','INPROGRESS')");
+		//rset.setFetchSize(200);
+
+		
+		if(rset.next())
+		{
+			alloted = 1;
+			leaseNo = rset.getString(1);
+		}
+		if(alloted==1)
+		{
+			ResultSet rset1= stmt.executeQuery("select * from uha_parking_request where applicant_no = '" + app_id + "' and lease_no = '" + leaseNo + "' and request_status in('APPROVED','INPROGRESS')");
+			if(rset1.next())
+			{
+				present = 1;
+				System.out.println("Spot ID: " + rset1.getString(10));
+				System.out.println("Start Date: " + rset1.getString(11));
+				System.out.println("End Date: " + rset1.getString(12));
+				System.out.println("Request No: " + rset1.getString(1));
+				System.out.println("Lease No: " + rset1.getString(2));
+				System.out.println("Applicant No: " + rset1.getString(3));
+				System.out.println("Permit ID: " + rset1.getString(4));
+				System.out.println("Request Status: " + rset1.getString(5));
+				System.out.println("Vehicle type: " + rset1.getString(6));
+				System.out.println("Non-nearby parking spot accepted: " + rset1.getString(8));
+				System.out.println("Handicapped: " + rset1.getString(9));
+			}
+
+		}
+		if(present == 0)
+			System.out.println("You do not have any approved parking requests for active or approved leases");
+		System.out.println("\nPress 1 to continue");
+		String a = scn.next();
+
+	}
+	
+	public void ReturnParkingSpot(String app_id, String app_name, int user_type) throws SQLException
+	{
+		int alloted = 0,present=0, choice = 0;
+		String leaseNo ="";
+		ResultSet rset= stmt.executeQuery("select lease_no from uha_lease where applicant_no = '" + app_id + "' and request_status in ('APPROVED','INPROGRESS')");
+		//rset.setFetchSize(200);
+
+		
+		if(rset.next())
+		{
+			alloted = 1;
+			leaseNo = rset.getString(1);
+		}
+		if(alloted==1)
+		{
+			ResultSet rset1= stmt.executeQuery("select * from uha_parking_request where applicant_no = '" + app_id + "' and lease_no = '" + leaseNo + "' and request_status in('APPROVED','INPROGRESS')");
+			if(rset1.next())
+			{
+				present = 1;
+				
+				System.out.println("Do you want to return your parking spot with ID: " + rset1.getString(10) + "\n1. Return \n2. Back");
+				choice = scn.nextInt();
+				
+				if(choice==1)
+				{
+					DateFormat df = new SimpleDateFormat("dd-MMM-yy");
+					Date dateobj = new Date();
+					String currDate = df.format(dateobj);
+					stmt.executeUpdate("update uha_parking_request set END_DATE = '" + currDate + "', request_status= 'COMPLETE' where permit_id = '" + rset1.getString(4) + "' ");
+					System.out.println("Parking spot returned");
+				}
+			}
+		}
+		if(present == 0)
+			System.out.println("You do not have a parking spot to return");
+		System.out.println("Press 1 to continue");
+		String a = scn.next();
+		
+	}
+	
+	public void ViewParkingLotInfo(String app_id, String app_name, int user_type) throws SQLException
+	{	int present = 0,present1 = 0, choice = 0, choice1 = 0;
+		String occupied = "Y";
+//		System.out.println("Select a parking lot ");
+		while(true)
+		{
+			present = present1 = 0;
+			ResultSet rset= stmt.executeQuery("select lot_no, no_of_spots from uha_parking_lot");
+			while (rset.next())
+			{
+				present=1;
+				System.out.println(" Lot Number: " + rset.getString(1) + " with No. of spots: " + rset.getString(2));
+			}
+			
+			if(present == 0)
+			{ 
+				System.out.println("No parking lots are present");
+				return;
+			}
+			
+			//System.out.println("0. Back");
+			
+			System.out.println("\nEnter lot number to view information or 0 to go back");
+			choice= scn.nextInt();
+			if(choice==0)
+				return;
+			ResultSet rset1= stmt.executeQuery("select spot_no, classification, monthly_rent, handicapped from uha_parking_spot where lot_no = '" + choice + "'");
+			System.out.println("SPOT NO  CLASSIFICATION  MONTHLY RENT  HANDICAPPED  OCCUPIED");
+			while (rset1.next())
+			{
+				occupied="N";
+				present1=1;
+				String spotID = rset1.getString(1);
+				//Check if spot is currently occupied or no:
+				ResultSet rset2= stmt2.executeQuery("select spot_id from uha_parking_request where request_status='INPROGRESS' and spot_id ='" + spotID + "'");
+				while(rset2.next())
+				{
+					occupied = "Y";
+				}
+
+				//System.out.println(rset1.getString(1) + "\t" + rset1.getString(2) + "\t" + rset1.getString(3) + "\t" + rset1.getString(4) + "\t" + occupied);
+				System.out.printf("%-7s  %-14s  %-12s  %-11s  %-8s  \n",spotID, rset1.getString(2), rset1.getString(3), rset1.getString(4), occupied);
+
+			}
+			if(present1 == 0)
+				System.out.println("No parking spots are present");
+		
+			System.out.println("Press 1 to continue or 0 to go back");
+			choice1 = scn.nextInt();
+			if(choice1 != 1)
+				return;
+		}
+	}
+		
+	public void RenewParkingSpot(String app_id, String app_name, int user_type) throws SQLException
+	{	
+		int currentspot = 0, lease = 0, parkingspotfree = 1, newleaseparkingspotexists = 0;
+		String leaseNo = "", spotID= "";
+		//Check if he has a current parking spot:
+		ResultSet rset1= stmt.executeQuery("select * from uha_parking_request where applicant_no = '" + app_id + "' and request_status = 'INPROGRESS'");
+		while(rset1.next())
+		{
+			currentspot=1;
+			spotID = rset1.getString(10);
+			ResultSet rset2= stmt2.executeQuery("select lease_no, enter_date, leave_date from uha_lease where applicant_no = '" + app_id + "' and request_status = 'APPROVED'");
+			while(rset2.next())
+			{
+				lease = 1;
+				leaseNo = rset2.getString(1);
+				ResultSet rset3= stmt3.executeQuery("select A.* from uha_parking_request A inner join uha_lease B on B.lease_no = '" + leaseNo + "' and A.spot_id = '" + spotID + "' and A.request_status IN('INPROGRESS','APPROVED') and ( (A.start_date < B.enter_date and A.end_date > B.leave_date) OR (A.start_date > B.enter_date and A.end_date < B.leave_date) OR (A.end_date > B.enter_date and A.end_date < B.leave_date) OR (A.start_date > B.enter_date and A.start_date < B.leave_date))");
+				if(rset3.next())
+				{
+					parkingspotfree=0;
+				}
+				if(parkingspotfree==1)
+				{
+					ResultSet rset4= stmt4.executeQuery("select * from uha_parking_request where lease_no = '" + leaseNo + "'");
+					if(rset4.next()) newleaseparkingspotexists = 1;
+
+					else
+					{
+						System.out.println("Can be renewed");
+						
+						DateFormat df = new SimpleDateFormat("dd-MMM-yy");
+						String date1 = df.format(rset2.getDate(2));
+						String date2 = df.format(rset2.getDate(3));
+						
+						stmt4.executeUpdate("insert into uha_parking_request (lease_no, applicant_no, request_status, vehicle_type, other_classification_accepted, not_near_housing_area_accepted, handicapped, spot_id, start_date, end_date) values ('" 
+						+ leaseNo + "', '" + app_id  + "', 'APPROVED', '" + rset1.getString(6) + "', '" + rset1.getString(7) + "', '" + rset1.getString(8) + "', '" + rset1.getString(9) + "', '" + spotID + "', '" + date1 + "', '" + date2 + "' )");
+						
+						System.out.println("Parking spot is renewed");
+					}
+				}
+				
+			}
+
+		}
+		if(currentspot==0)
+		{
+			System.out.println("You do not have a parking spot to renew");
+			return;
+		}
+		if(lease==0)
+		{
+			System.out.println("You do not have an approved lease to renew parking.");
+			return;
+		}
+		if(parkingspotfree==0)
+		{
+			System.out.println("Your parking spot is not free during your next lease period .");
+			return;
+		}
+		if(newleaseparkingspotexists==1)
+		{
+			System.out.println("You have an existing parking request for the new lease period.");
+			return;
+		}
+		
+	}
+	
+	public void Parking(String app_id, String app_name, int user_type) throws SQLException{
+		int choice = 0, mark = 0;
+		do{
+			mark = 0;
+			
+			System.out.println("\nDashboard of " + app_name + ": \n 1. Request new parking spot \n 2. View parking lot information \n 3. View current parking spot \n 4. Renew parking spot \n 5. Return parking spot \n 6. View request status \n 7. Back");
+			
+			try{
+				choice = scn.nextInt();
+			}
+			catch(Exception e){
+				System.out.println("Invalid choice. Try again. ");
+				mark = 1;
+			}
+			
+			if(mark != 1){
+				switch(choice){
+				case 1:
+					RequestParking(app_id, app_name, user_type);
+					break;
+				case 2:
+					ViewParkingLotInfo(app_id, app_name, user_type);
+					break;
+				case 3:
+					ViewCurrentParkingSpot(app_id, app_name, user_type);
+					break;
+				case 4:
+					RenewParkingSpot(app_id, app_name, user_type);
+					break;
+				case 5:
+					ReturnParkingSpot(app_id, app_name, user_type);
+					break;
+				case 6:
+					ViewParkingRequestStatus(app_id, app_name, user_type);
+					break;
+				case 7:
+					return;
+				default:
+					System.out.println("Invalid choice. Try again.");
+					mark = 1;
+				}
+				mark = 1;
+			}
+			
+		}while(mark!=0);
+	}
+
+}
