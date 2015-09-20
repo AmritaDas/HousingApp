@@ -2563,4 +2563,1152 @@ public class uha {
 		}while(mark!=0);
 	}
 
+	public void Profile(String app_id, String app_name, int user_type) throws SQLException{
+		int choice = 0, mark = 0;
+		
+		do{
+			mark = 0;
+
+			System.out.println("\nProfile of " + app_name + ": \n 1. View Profile \n 2. Update Profile \n 3. Back");
+			try{
+				choice = Integer.parseInt(scn.nextLine());
+			}
+			catch(Exception e){
+				System.out.println("Invalid choice. Try again. ");
+				mark = 1;
+			}
+			
+			if(mark != 1){
+				switch(choice){
+				case 1: 
+					switch(user_type){
+					case 1:
+						System.out.println("\nProfile information of " + app_name);
+						
+						Student s = new Student();
+						
+						ResultSet rset = stmt.executeQuery("select * from uha_applicant where applicant_id = '" + app_id + "' ");
+						if(rset.next()) {
+							s.name = rset.getString(2) + " " + rset.getString(12);	
+							s.dob = rset.getString(3).substring(0, 11);
+							s.gender = rset.getString(4).compareToIgnoreCase("M") == 0 ? "Male" : "Female";
+							s.phone = rset.getString(9)!=null?rset.getString(9):" ";
+							s.altphone = rset.getString(10)!=null?rset.getString(10):" ";
+							s.nation = rset.getString(5)!=null?rset.getString(5):" ";	
+							s.smoker = rset.getString(6)!=null?rset.getString(6):" ";
+				 			s.special_needs = rset.getString(7)!=null?rset.getString(7):" ";	
+							s.comments = rset.getString(8)!=null?rset.getString(8):" ";
+							
+							String st = rset.getString(13)!=null?rset.getString(13) + ", ":" ";
+							String ct = rset.getString(14)!=null?rset.getString(14) + ", ":" ";
+							String pc = rset.getString(15)!=null?rset.getString(15) + ", ":" ";
+							String cn = rset.getString(16)!=null?rset.getString(16):" ";
+							s.homeaddress = st + ct + pc + cn;
+						}
+						
+						ResultSet rset1 = stmt.executeQuery("select * from uha_student where student_id = '" + app_id + "' ");
+						if(rset1.next()) {
+							s.status = rset1.getString(2);
+							s.course = rset1.getString(3)!=null?rset1.getString(3):" ";
+							String yr = rset1.getString(4)!=null?rset1.getString(4):" ";
+							String dg = rset1.getString(5)!=null?rset1.getString(5):" ";
+							s.catg = "Year " + yr + " " + dg;
+						}	
+						
+						int i = -1, j = -1;
+	
+						ResultSet rset3 = stmt.executeQuery("select * from uha_applicant_family where applicant_id = '" + app_id + "' ");
+						if(rset3.next()){
+							i=0;
+							s.fm[i] = new FamilyMember();
+							s.fm[i].name = rset3.getString(4) + " " + rset3.getString(5);
+							s.fm[i].relation = rset3.getString(2)!=null?rset3.getString(2):" ";
+							s.fm[i].dob = rset3.getString(3)!=null?rset3.getString(3).substring(0, 11):" ";
+							while(rset3.next() && i<4){
+								i++;
+								s.fm[i] = new FamilyMember();
+								s.fm[i].name = rset3.getString(4) + " " + rset3.getString(5);
+								s.fm[i].relation = rset3.getString(2)!=null?rset3.getString(2):" ";
+								s.fm[i].dob = rset3.getString(3)!=null?rset3.getString(3).substring(0, 11):" ";
+							}
+						}
+	
+						ResultSet rset4 = stmt.executeQuery("select * from uha_applicant_next_of_kin where applicant_id = '" + app_id + "' ");
+						if(rset4.next()){
+							j = 0;
+							s.nk[j] = new NextOfKin();
+							s.nk[j].name = rset4.getString(7) + " " + rset4.getString(8);
+							s.nk[j].relation = rset4.getString(2)!=null?rset4.getString(2):" ";
+							s.nk[j].contact = rset4.getString(3)!=null?rset4.getString(3):" ";
+							String st = rset4.getString(4)!=null?rset4.getString(4) + ", ":" ";
+							String ct = rset4.getString(5)!=null?rset4.getString(5) + ", ":" ";
+							String pc = rset4.getString(6)!=null?rset4.getString(6) + ", ":" ";
+							String cn = rset4.getString(10)!=null?rset4.getString(10):" ";
+							s.nk[j].haddress = st + ct + pc + cn;
+							while(rset4.next() && j<4){
+								j++;
+								s.nk[j] = new NextOfKin();
+								s.nk[j].name = rset4.getString(7) + " " + rset4.getString(8);
+								s.nk[j].relation = rset4.getString(2)!=null?rset4.getString(2):" ";
+								s.nk[j].contact = rset4.getString(3)!=null?rset4.getString(3):" ";
+								st = rset4.getString(4)!=null?rset4.getString(4) + ", ":" ";
+								ct = rset4.getString(5)!=null?rset4.getString(5) + ", ":" ";
+								pc = rset4.getString(6)!=null?rset4.getString(6) + ", ":" ";
+								cn = rset4.getString(10)!=null?rset4.getString(10):" ";
+								s.nk[j].haddress = st + ct + pc + cn;
+							}
+						}
+						
+						System.out.println(" ID: " + app_id + "\n Name: " + s.name + "\n DOB: " + s.dob +   
+								"\n Gender: " + s.gender + "\n Course: " + s.course +  "\n Status: " + s.status + 
+								"\n Category: " + s.catg + "\n Phone No: " + s.phone +  "\n Alternate Phone No: " + s.altphone + 
+								"\n Nationality: " + s.nation +  "\n Home Address: " + s.homeaddress + "\n Smoker: " + s.smoker +  
+								"\n Special Needs: " + s.special_needs + "\n Comments: " + s.comments	);
+						
+						for(int ci = 0; ci<=i; ci++){
+							if(ci==0){
+								System.out.println("\n Family: ");
+							}
+							System.out.println(" Name: " + s.fm[ci].name + " Relation: " + s.fm[ci].relation + " DOB: " + s.fm[ci].dob);
+						}
+						
+						for(int cj = 0; cj<=j; cj++){
+							if(cj == 0){
+								System.out.println("\n Next Of Kin: ");
+							}
+							System.out.println(" Name: " + s.nk[cj].name + " Relation: " + s.nk[cj].relation + 
+									"\n Contact: " + s.nk[cj].contact + " Address: " + s.nk[cj].haddress);
+						}
+						
+						rset.close();
+						rset1.close();
+						rset3.close();
+						rset4.close();
+						
+						break;
+					case 2:
+						System.out.println("\nProfile information of " + app_name);
+						
+						Guest g = new Guest();
+						
+						ResultSet rset5 = stmt.executeQuery("select * from uha_applicant where applicant_id = '" + app_id + "' ");
+						if(rset5.next()) {
+							g.name = rset5.getString(2) + " " + rset5.getString(12);	
+							g.dob = rset5.getString(3).substring(0, 11);
+							g.gender = rset5.getString(4).compareToIgnoreCase("M") == 0 ? "Male" : "Female";
+							g.phone = rset5.getString(9)!=null?rset5.getString(9):" ";
+							g.altphone = rset5.getString(10)!=null?rset5.getString(10):" ";
+							g.nation = rset5.getString(5)!=null?rset5.getString(5):" ";	
+							g.smoker = rset5.getString(6)!=null?rset5.getString(6):" ";
+							g.special_needs = rset5.getString(7)!=null?rset5.getString(7):" ";	
+							g.comments = rset5.getString(8)!=null?rset5.getString(8):" ";
+							
+							String st = rset5.getString(13)!=null?rset5.getString(13) + ", ":" ";
+							String ct = rset5.getString(14)!=null?rset5.getString(14) + ", ":" ";
+							String pc = rset5.getString(15)!=null?rset5.getString(15) + ", ":" ";
+							String cn = rset5.getString(16)!=null?rset5.getString(16):" ";
+							g.homeaddress = st + ct + pc + cn;
+						}
+						
+						ResultSet rset55 = stmt.executeQuery("select * from uha_guest where approval_id = '" + app_id + "' ");
+						if(rset55.next()){
+							g.status = rset55.getString(2);
+							g.coach_course = rset55.getString(3);
+						}
+						
+						int k = -1, l = -1;
+	
+						ResultSet rset6 = stmt.executeQuery("select * from uha_applicant_family where applicant_id = '" + app_id + "' ");
+						if(rset6.next()){
+							k=0;
+							g.fm[k] = new FamilyMember();
+							g.fm[k].name = rset6.getString(4) + " " + rset6.getString(5);
+							g.fm[k].relation = rset6.getString(2)!=null?rset6.getString(2):" ";
+							g.fm[k].dob = rset6.getString(3)!=null?rset6.getString(3).substring(0, 11):" ";
+							while(rset6.next() && k<4){
+								k++;
+								g.fm[k] = new FamilyMember();
+								g.fm[k].name = rset6.getString(4) + " " + rset6.getString(5);
+								g.fm[k].relation = rset6.getString(2)!=null?rset6.getString(2):" ";
+								g.fm[k].dob = rset6.getString(3)!=null?rset6.getString(3).substring(0, 11):" ";
+							}
+						}
+	
+						ResultSet rset7 = stmt.executeQuery("select * from uha_applicant_next_of_kin where applicant_id = '" + app_id + "' ");
+						if(rset7.next()){
+							l = 0;
+							g.nk[l] = new NextOfKin();
+							g.nk[l].name = rset7.getString(7) + " " + rset7.getString(8);
+							g.nk[l].relation = rset7.getString(2)!=null?rset7.getString(2):" ";
+							g.nk[l].contact = rset7.getString(3)!=null?rset7.getString(3):" ";
+							String st = rset7.getString(4)!=null?rset7.getString(4) + ", ":" ";
+							String ct = rset7.getString(5)!=null?rset7.getString(5) + ", ":" ";
+							String pc = rset7.getString(6)!=null?rset7.getString(6) + ", ":" ";
+							String cn = rset7.getString(10)!=null?rset7.getString(10):" ";
+							g.nk[l].haddress = st + ct + pc + cn;
+							while(rset7.next() && l<4){
+								l++;
+								g.nk[l] = new NextOfKin();
+								g.nk[l].name = rset7.getString(7) + " " + rset7.getString(8);
+								g.nk[l].relation = rset7.getString(2)!=null?rset7.getString(2):" ";
+								g.nk[l].contact = rset7.getString(3)!=null?rset7.getString(3):" ";
+								st = rset7.getString(4)!=null?rset7.getString(4) + ", ":" ";
+								ct = rset7.getString(5)!=null?rset7.getString(5) + ", ":" ";
+								pc = rset7.getString(6)!=null?rset7.getString(6) + ", ":" ";
+								cn = rset7.getString(10)!=null?rset7.getString(10):" ";
+								g.nk[l].haddress = st + ct + pc + cn;
+							}
+						}
+						
+						System.out.println(" ID: " + app_id + "\n Name: " + g.name + "\n DOB: " + g.dob + "\n Gender: " + g.gender +    
+								"\n Status: " + g.status + "\n Coaching Coourse: " + g.coach_course + "\n Phone No: " + g.phone + 
+								"\n Alternate Phone No: " + g.altphone + "\n Nationality: " + g.nation +  "\n Home Address: " + g.homeaddress +   
+								"\n Smoker: " + g.smoker + "\n Special Needs: " + g.special_needs + "\n Comments: " + g.comments);
+						
+						for(int ci = 0; ci<=k; ci++){
+							if(ci==0){
+								System.out.println("\n Family: ");
+							}
+							System.out.println(" Name: " + g.fm[ci].name + " Relation: " + g.fm[ci].relation + " DOB: " + g.fm[ci].dob);
+						}
+						
+						for(int cj = 0; cj<=l; cj++){
+							if(cj == 0){
+								System.out.println("\n Next Of Kin: ");
+							}
+							System.out.println(" Name: " + g.nk[cj].name + " Relation: " + g.nk[cj].relation + 
+									"\n Contact: " + g.nk[cj].contact + " Address: " + g.nk[cj].haddress);
+						}
+						
+						rset5.close();
+						rset6.close();
+						rset7.close();
+						break;
+					case 3:
+						System.out.println("\nProfile information of " + app_name);
+						
+						Staff t = new Staff();
+						
+						ResultSet rset8 = stmt.executeQuery("select * from uha_admin where staff_no = '" + app_id + "' ");
+						if(rset8.next()) {
+							t.name = rset8.getString(2) + " " + rset8.getString(7);	
+							t.dob = rset8.getString(4).substring(0, 11);
+							t.gender = rset8.getString(3).compareToIgnoreCase("M") == 0 ? "Male" : "Female";
+							t.location = rset8.getString(5)!=null?rset8.getString(5):" ";
+							t.position = rset8.getString(6)!=null?rset8.getString(6):" ";
+							String st = rset8.getString(8)!=null?rset8.getString(8) + ", ":" ";
+							String ct = rset8.getString(9)!=null?rset8.getString(9) + ", ":" ";
+							String pc = rset8.getString(10)!=null?rset8.getString(10) + ", ":" ";
+							String cn = rset8.getString(11)!=null?rset8.getString(11):" ";
+							t.haddress = st + ct + pc + cn;
+						}
+						
+						System.out.println(" ID: " + app_id + "\n Name: " + t.name + "\n DOB: " + t.dob +   
+								"\n Gender: " + t.gender + "\n Home Address: " + t.haddress +   
+								"\n Position: " + t.position + "\n Location: " + t.location	);
+						
+						rset8.close();
+
+						break;
+					}
+
+					int m = 0;
+					do{
+						m = 0;
+						System.out.println("\nTo go back, press b");
+						String b = scn.nextLine();
+						if(b.compareToIgnoreCase("b") == 0){
+							mark = 1;
+						}
+						else{
+							m = 1;
+						}
+					}while(m != 0);
+					break;
+				case 2: 
+					switch(user_type){
+					case 1:
+						int cont1 = 0;
+						do{
+							cont1 = 0;
+							System.out.println("\n Select information to update: " + 
+												"\n 1. Name \t 2. Gender \t 3. DOB \t 4. Course " +
+												"\n 5. Category \t 6. Phone No \t 7. Alternate Phone no " +
+												"\n 8. Nationality\t 9. Home Address " + 
+												"\n 10. Smoker \t 11. Comments \t 12. Special Needs " + 
+												"\n\n 13. Add Family Members\t 14. Edit Family Members " + 
+												"\n 15. Add Next Of Kin \t 16. Edit Next Of Kin ");
+							int choiceU;
+							try{
+								choiceU = Integer.parseInt(scn.nextLine());
+							}
+							catch(NumberFormatException e){
+								System.out.println("Invalid choice. Try again. ");
+								cont1 = 1;
+								continue;
+							}
+							
+							switch(choiceU){
+							case 1: 
+								app_name = updateName(app_id, app_name, user_type);
+								break;
+							case 2: 
+								updateGender(app_id, app_name, user_type);
+								break;
+							case 3:
+								updateDOB(app_id, app_name, user_type);
+								break;
+							case 4:
+								int dw4 = 0;
+								do{
+									dw4 = 0;
+									String cs = "";
+									System.out.print("Enter course: ");
+									cs = scn.nextLine();
+									
+									if(cs.contains("\'") || cs.contains("\"")){
+										System.out.println("Course name may not contain single quotes. ");
+										dw4 = 1;
+									}
+									if(dw4!=1){
+										stmt.executeUpdate("update uha_student set course = '" + cs.trim() + "' where student_id = '" + app_id + "' ");
+										System.out.println("Course has been updated. ");
+									}
+								}while(dw4!=0);
+								break;
+							case 5:
+								int dw5 = 0;
+								do{
+									dw5 = 0;
+									String yr = "", dg = "";
+									System.out.print("Enter year: ");
+									yr = scn.nextLine();
+									System.out.print("Enter degree: ");
+									dg = scn.nextLine();
+									
+									try{
+										int year = Integer.parseInt(yr);
+										if(year <= 0)
+											throw new SQLDataException("year is not correct. ");
+										
+										if(dg.contains("\'") || dg.contains("\""))
+											throw new SQLDataException("Degree may not contain single quotes");
+										
+										stmt.executeUpdate("update uha_student set category_year = '" + year + 
+												"', category_degree = '" + dg.trim() + "' where student_id = '" + app_id + "' ");
+										System.out.println("Category has been updated. ");
+									}
+									catch(NumberFormatException e){
+										System.out.println("Invalid entry. Try again. ");
+										dw5 = 1;
+									}
+									catch(SQLDataException e){
+										System.out.println("Invalid entry: " + e + " Try again. ");
+										dw5 = 1;
+									}
+
+								}while(dw5!=0);
+								break;
+							case 6:
+								updatePhone(app_id, app_name, user_type, 1);
+								break;
+							case 7:
+								updatePhone(app_id, app_name, user_type, 2);
+								break;
+							case 8:
+								updateNation(app_id, app_name, user_type);
+								break;
+							case 9:
+								updateAddress(app_id, app_name, user_type);
+								break;
+							case 10:
+								updateSmoker(app_id, app_name, user_type);
+								break;
+							case 11:
+								updateCommNeeds(app_id, app_name, user_type, 1);
+								break;
+							case 12:
+								updateCommNeeds(app_id, app_name, user_type, 2);
+								break;
+							case 13:
+								addFamily(app_id, app_name);																
+								break;
+							case 14:
+								updateFamily(app_id, app_name);
+								break;
+							case 15:
+								addNextOfKin(app_id, app_name);								
+								break;
+							case 16:
+								updateNextOfKin(app_id, app_name);
+								break;
+							default: 
+								System.out.println("Invalid choice. Try again. \n");
+								cont1 = 2;
+							}
+							
+							if(cont1!=2){
+								int m2 = 0;
+								do{
+									m2 = 0;
+									System.out.println("\nTo continue updating, press u. To go back, press b");
+									String u = scn.nextLine();
+									if(u.compareToIgnoreCase("u") == 0){
+										cont1 = 1;
+									}
+									else if(u.compareToIgnoreCase("b") == 0){
+										mark = 1;
+									}
+									else{
+										m2 = 1;
+									}
+								}while(m2 != 0);
+							}
+							
+						}while(cont1!=0);
+						
+						break;
+						
+					case 2:
+						
+						int cont2 = 0;
+						do{
+							cont2 = 0;
+							System.out.println("\n Select information to update: " + 
+												"\n 1. Name \t 2. Gender \t 3. DOB " + 
+												"\n 4. Phone No \t 5. Alternate Phone no " +
+												"\n 6. Nationality\t 7. Home Address " +
+												"\n 8. Smoker \t 9. Comments \t 10. Special Needs " + 
+												"\n\n 11. Add Family Members\t 12. Edit Family Members " + 
+												"\n 13. Add Next Of Kin \t 14. Edit Next Of Kin ");
+							int choiceU;
+							try{
+								choiceU = Integer.parseInt(scn.nextLine());
+							}
+							catch(NumberFormatException e){
+								System.out.println("Invalid choice. Try again. ");
+								cont2 = 1;
+								continue;
+							}
+							
+							switch(choiceU){
+							case 1: 
+								app_name = updateName(app_id, app_name, user_type);
+								break;
+							case 2: 
+								updateGender(app_id, app_name, user_type);
+								break;
+							case 3:
+								updateDOB(app_id, app_name, user_type);
+								break;
+							case 4:
+								updatePhone(app_id, app_name, user_type, 1);
+								break;
+							case 5:
+								updatePhone(app_id, app_name, user_type, 2);								
+								break;
+							case 6:
+								updateNation(app_id, app_name, user_type);
+								break;
+							case 7:
+								updateAddress(app_id, app_name, user_type);
+								break;
+							case 8:
+								updateSmoker(app_id, app_name, user_type);
+								break;
+							case 9:
+								updateCommNeeds(app_id, app_name, user_type, 1);
+								break;
+							case 10:
+								updateCommNeeds(app_id, app_name, user_type, 2);
+								break;
+							case 11:
+								addFamily(app_id, app_name);
+								break;
+							case 12:
+								updateFamily(app_id, app_name);
+								break;
+							case 13:
+								addNextOfKin(app_id, app_name);
+								break;
+							case 14:
+								updateNextOfKin(app_id, app_name);
+								break;
+								
+							default: 
+								System.out.println("Invalid choice. Try again. \n");
+								cont1 = 2;
+							}
+							
+							if(cont2!=2){
+								int m2 = 0;
+								do{
+									m2 = 0;
+									System.out.println("\nTo continue updating, press u. To go back, press b");
+									String u = scn.nextLine();
+									if(u.compareToIgnoreCase("u") == 0){
+										cont2 = 1;
+									}
+									else if(u.compareToIgnoreCase("b") == 0){
+										mark = 1;
+									}
+									else{
+										m2 = 1;
+									}
+								}while(m2 != 0);
+							}
+							
+						}while(cont2!=0);
+						
+						break;
+					case 3:
+						int cont = 0;
+						do{
+							cont = 0;
+							System.out.println("\n Select information to update: \n 1. Name \t 2. Gender \t 3. DOB" + 
+												"\n 4. Address \t 5. Position \t 6. Location");
+							int choiceU;
+							try{
+								choiceU = Integer.parseInt(scn.nextLine());
+							}
+							catch(NumberFormatException e){
+								System.out.println("Invalid choice. Try again. ");
+								cont = 1;
+								continue;
+							}
+							
+							switch(choiceU){
+							case 1: 
+								app_name = updateName(app_id, app_name, user_type);
+								break;
+							case 2:
+								updateGender(app_id, app_name, user_type);
+								break;
+							case 3: 
+								updateDOB(app_id, app_name, user_type);
+								break;
+							case 4:
+								updateAddress(app_id, app_name, user_type);
+								break;
+							case 5:
+								int dw5 = 0;
+								do{
+									dw5 = 0;
+									System.out.print("Enter Position: ");
+									String ps = scn.nextLine();
+									if(ps.contains("\'") || ps.contains("\"")){
+										System.out.println("Location may not contain single quotes. ");
+										dw5 = 1;
+									}
+									if(dw5!=1){
+										stmt.executeUpdate("update uha_admin set position = '" + ps + "' where staff_no = '" + app_id + "' ");
+										System.out.println("Position has been updated. ");										
+									}
+									
+								}while(dw5!=0);
+								
+								break;
+							case 6:
+								int dw6 = 0;
+								do{
+									dw6 = 0;
+									System.out.print("Enter Location: ");
+									String lc = scn.nextLine();
+									if(lc.contains("\'") || lc.contains("\"")){
+										System.out.println("Location may not contain single quotes. ");
+										dw6 = 1;
+									}
+									if(dw6!=1){
+										stmt.executeUpdate("update uha_admin set location = '" + lc + "' where staff_no = '" + app_id + "' ");
+										System.out.println("Location has been updated. ");										
+									}
+									
+								}while(dw6!=0);
+								
+								break;
+							default:
+								System.out.println("Invalid choice. Try again. \n");
+								cont = 2;
+							}
+							
+							if(cont!=2){
+								int m2 = 0;
+								do{
+									m2 = 0;
+									System.out.println("\nTo continue updating, press u. To go back, press b");
+									String u = scn.nextLine();
+									if(u.compareToIgnoreCase("u") == 0){
+										cont = 1;
+									}
+									else if(u.compareToIgnoreCase("b") == 0){
+										mark = 1;
+									}
+									else{
+										m2 = 1;
+									}
+								}while(m2 != 0);
+							}
+							
+						}while(cont!=0);
+						break;
+					}
+
+					break;
+
+				case 3: 
+					return;
+
+				default: 
+					System.out.println("Invalid choice. Try again"); 
+					mark = 1; 
+				}
+			}
+
+		}while(mark!=0);			
+
+	}
+
+	public String updateName(String app_id, String app_name, int user_type) throws SQLException{
+		
+		int dw1 = 0;
+		do{
+			dw1 = 0;
+			String fn = "", ln = "";
+			System.out.print("Enter first name: ");
+			fn = scn.nextLine();
+			System.out.print("Enter last name: ");
+			ln = scn.nextLine();
+			
+			if(fn.contains("\'") || fn.contains("\"") || ln.contains("\'") || ln.contains("\"")){
+				System.out.println("Names may not contain single quotes. ");
+				dw1 = 1;
+			}
+			if(dw1!=1){
+				try{
+					String esql = "update uha_applicant set first_name = '" + fn.trim() + "', last_name = '" + ln.trim() + 
+							"' where applicant_id = '" + app_id + "' ";
+					if(user_type == 2){
+						esql += " and guest = 'Y' ";
+					}
+					if(user_type == 3){
+						esql = "update uha_admin set first_name = '" + fn + "', last_name = '" + ln + 
+								"' where staff_no = '" + app_id + "' ";
+					}
+					stmt.executeUpdate(esql);
+					app_name = fn;
+					System.out.println("Name has been updated. ");
+				}
+				catch(SQLException e){
+					System.out.println("Invalid entry ");
+					dw1 = 1;
+				}
+			}
+
+		}while(dw1!=0);
+
+		return app_name;
+	}
+	
+	public void updateGender(String app_id, String app_name, int user_type) throws SQLException{
+		int dw2 = 0;
+		do{
+			dw2 = 0;
+			String gn = "";
+			System.out.print("Enter gender (M/F): ");
+			gn = scn.nextLine();
+			if(!( (gn.trim().compareToIgnoreCase("M") == 0) || (gn.trim().compareToIgnoreCase("F") == 0) )){
+				System.out.println("Please enter gender as M or F. ");
+				dw2 = 1;
+			}
+			if(dw2!=1){
+				String esql = "update uha_applicant set gender = '" + gn.trim().toUpperCase() + "' where applicant_id = '" + app_id + "' ";
+				if(user_type == 2){
+					esql += " and guest = 'Y' ";
+				}
+				if(user_type == 3){
+					esql = "update uha_admin set gender = '" + gn.trim().toUpperCase() + "' where staff_no = '" + app_id + "' ";
+				}
+				stmt.executeUpdate(esql);
+				System.out.println("Gender has been updated. ");
+			}
+			
+		}while(dw2!=0);
+	}
+	
+	public void updateDOB(String app_id, String app_name, int user_type) throws SQLException{
+		int dw3 = 0;
+		do{
+			dw3 = 0;
+			String day = "", month = "";
+			System.out.print("Enter 2 digit day: ");
+			day = scn.nextLine();
+			System.out.print("Enter 3 letter month: ");
+			month = scn.nextLine();
+			System.out.print("Enter 4 digit year: ");
+			String year = scn.nextLine();
+			
+			try{
+				int yr = Integer.parseInt(year);
+				if(yr<1900 || yr>2015)
+					throw new SQLDataException("year is not correct. ");
+				
+				if(day.contains("\'") || day.contains("\"") || month.contains("\'") || month.contains("\""))
+					throw new SQLDataException("Day or Month may not contain single quotes. ");
+				
+				String db = day.trim() + "-" + month.trim() + "-" + yr;										
+				
+				String esql = "update uha_applicant set dob = '" + db + "' where applicant_id = '" + app_id + "' ";
+				if(user_type == 2){
+					esql += " and guest = 'Y' ";
+				}
+				if(user_type == 3){
+					esql = "update uha_admin set dob = '" + db + "' where staff_no = '" + app_id + "' ";
+				}
+				stmt.executeUpdate(esql);
+				System.out.println("DOB has been updated. ");
+			}
+			catch(NumberFormatException e){
+				System.out.println("Invalid entry. Try again. \n");
+				dw3 = 1;
+			}
+			catch(SQLDataException e){
+				System.out.println("Invalid entry: " + e + " Try again. \n");
+				dw3 = 1;
+			}
+			
+		}while(dw3!=0);
+	}
+	
+	public void updateAddress(String app_id, String app_name, int user_type) throws SQLException{
+		int dw9 = 0;
+		do{
+			dw9 = 0;
+			System.out.print("Enter street: ");
+			String st = scn.nextLine();
+			System.out.print("Enter city: ");
+			String ct = scn.nextLine();
+			System.out.print("Enter postcode: ");
+			String pc = scn.nextLine();
+			System.out.print("Enter country: ");
+			String cn = scn.nextLine();
+			
+			try{
+				int ptc = Integer.parseInt(pc);
+				
+				if(st.contains("\'") || st.contains("\"") || ct.contains("\'") || ct.contains("\"")){
+					System.out.println("Address may not contain single quotes. ");
+					dw9 = 1;
+				}
+				if(dw9!=1){
+					String esql = "update uha_applicant set street = '" + st.trim() + "', city = '" + ct.trim() + 
+							"', postcode = '" + ptc + "', country = '" + cn + "' where applicant_id = '" + app_id + "' ";
+					if(user_type == 2){
+						esql += " and guest = 'Y' ";
+					}
+					if(user_type == 3){
+						esql = "update uha_admin set street = '" + st.trim() + "', city = '" + ct.trim() + 
+								"', postcode = '" + ptc + "', country = '" + cn + "' where staff_no = '" + app_id + "' ";
+					}
+					stmt.executeUpdate(esql);
+					System.out.println("Address has been updated. ");
+				}
+				
+			}
+			catch(NumberFormatException e){
+				System.out.println("Invalid postcode. Try again. \n");
+				dw9 = 1;
+			}
+			catch(SQLDataException e){
+				System.out.println("Invalid postcode. Try again. \n");
+				dw9 = 1;
+			}
+			catch(SQLIntegrityConstraintViolationException e){
+				System.out.println("Invalid postcode. Try again. \n");
+				dw9 = 1;
+			}
+			
+		}while(dw9!=0);
+	}
+	
+	public void updatePhone(String app_id, String app_name, int user_type, int phone) throws SQLException{
+		int dw6 = 0;
+		do{
+			dw6 = 0;
+			String ph = "";
+			if(phone == 1){
+				System.out.print("Enter phone no: ");
+			}
+			if(phone == 2){
+				System.out.print("Enter alternate phone no: ");
+			}
+			ph = scn.nextLine();
+			
+			try{
+				long p = Long.parseLong(ph);
+				
+				if(ph.contains("\'") || ph.contains("\""))
+					throw new SQLDataException("phone number is incorrect");
+				
+				String esql = "";
+				if(phone == 1){
+					esql = "update uha_applicant set phone_no = '" + p + "' where applicant_id = '" + app_id + "' ";
+				}
+				if(phone == 2){
+					esql = "update uha_applicant set alt_phone_no = '" + p + "' where applicant_id = '" + app_id + "' ";
+				}
+				if(user_type == 2){
+					esql += " and guest = 'Y' ";
+				}
+				stmt.executeUpdate(esql);
+				
+				if(phone == 1){
+					System.out.println("Phone no has been updated. ");
+				}
+				if(phone == 2){
+					System.out.println("Alternate phone no has been updated. ");
+				}
+			}
+			catch(NumberFormatException e){
+				System.out.println("Invalid entry. Try again. ");
+				dw6 = 1;
+			}
+			catch(SQLDataException e){
+				System.out.println("Invalid entry: " + e + " Try again. ");
+				dw6 = 1;
+			}
+			catch(SQLIntegrityConstraintViolationException e){
+				System.out.println("Invalid entry. Try again. ");
+				dw6 = 1;
+			}
+
+		}while(dw6!=0);
+	}
+	
+	public void updateNation(String app_id, String app_name, int user_type) throws SQLException{
+		int dw8 = 0;
+		do{
+			dw8 = 0;
+			String nt = "";
+			System.out.print("Enter nationality: ");
+			nt = scn.nextLine();
+			
+			if(nt.contains("\'") || nt.contains("\"")){
+				System.out.println("Nationality may not contain single quotes. ");
+				dw8 = 1;
+			}
+			if(dw8!=1){
+				String esql = "update uha_applicant set nation_of_origin = '" + nt.trim() + "' where applicant_id = '" + app_id + "' ";
+				if(user_type == 2){
+					esql += " and guest = 'Y' ";
+				}
+				stmt.executeUpdate(esql);
+				System.out.println("Nationality has been updated. ");
+			}
+		}while(dw8!=0);
+	}
+	
+	public void updateSmoker(String app_id, String app_name, int user_type) throws SQLException{
+		int dw10 = 0;
+		do{
+			dw10 = 0;
+			String sm = "";
+			System.out.print("Enter smoking preference (Y/N): ");
+			sm = scn.nextLine();
+			if(!( (sm.trim().compareToIgnoreCase("Y") == 0) || (sm.trim().compareToIgnoreCase("N") == 0) )){
+				System.out.println("Please enter smoking preference as Y or N. ");
+				dw10 = 1;
+			}
+			if(dw10!=1){
+				String esql = "update uha_applicant set smoker = '" + sm.trim().toUpperCase() + "' where applicant_id = '" + app_id + "' ";
+				if(user_type == 2){
+					esql += " and guest = 'Y' "; 
+				}
+				stmt.executeUpdate(esql);
+				System.out.println("Smoking Preference has been updated. ");
+			}
+			
+		}while(dw10!=0);
+	}
+
+	public void updateCommNeeds(String app_id, String app_name, int user_type, int cn) throws SQLException{
+		int dw11 = 0;
+		do{
+			dw11 = 0;
+			String cm = "";
+			if(cn == 1){
+				System.out.print("Enter comments: ");
+			}
+			if(cn == 2){
+				System.out.print("Enter special needs requirements: ");
+			}
+			cm = scn.nextLine();
+			
+			if(cm.contains("\'") || cm.contains("\"")){
+				System.out.println("Entry may not contain single quotes. ");
+				dw11 = 1;
+			}
+			if(dw11!=1){
+				String esql = "";
+				if(cn == 1){
+					esql = "update uha_applicant set comments = '" + cm.trim() + "' where applicant_id = '" + app_id + "' ";
+				}
+				if(cn == 2){
+					esql = "update uha_applicant set special_needs = '" + cm.trim() + "' where applicant_id = '" + app_id + "' ";
+				}
+				if(user_type == 2){
+					esql += " and guest = 'Y' ";
+				}
+				stmt.executeUpdate(esql);
+				if(cn == 1){
+					System.out.println("Comments have been updated. ");
+				}
+				if(cn == 2){
+					System.out.println("Special Needs requirements have been updated. ");
+				}
+			}
+		}while(dw11!=0);
+	}
+
+	public void addFamily(String app_id, String app_name) throws SQLException{
+		int dw13 = 0;
+		do{
+			dw13 = 0;
+			System.out.print("Enter Family Member's first name: ");
+			String fn = scn.nextLine();
+			System.out.print("Enter Family Member's last name: ");
+			String ln = scn.nextLine();
+			
+			if(fn.contains("\'") || fn.contains("\"") || ln.contains("\'") || ln.contains("\"")){
+				System.out.println("Names may not contain single quotes. ");
+				dw13 = 1;
+			}
+
+			if(fn.trim().isEmpty() || ln.trim().isEmpty()){
+				System.out.println("Names may not be null. ");
+				dw13 = 1;
+			}
+			
+			if(dw13!=1){
+				
+				int dw130 = 0;
+				String rn = "";
+				do{
+					dw130 = 0;
+					System.out.print("Enter Family member's relation to you: ");
+					rn = scn.nextLine();
+					
+					if(rn.contains("\'") || rn.contains("\"")){
+						System.out.println("Relation may not contain single quotes. ");
+						dw130 = 1;
+					}
+				}while(dw130!=0);
+
+				System.out.println("Enter Family Member's DOB: ");
+				String db = "";
+				
+				int dw131 = 0;
+				do{
+					dw131 = 0;
+					String day = "", month = "";
+					System.out.print("Enter 2 digit day: ");
+					day = scn.nextLine();
+					System.out.print("Enter 3 letter month: ");
+					month = scn.nextLine();
+					System.out.print("Enter 4 digit year: ");
+					String year = scn.nextLine();
+					
+					try{
+						int yr = Integer.parseInt(year);
+						if(yr<1900 || yr>2015)
+							throw new NumberFormatException("year is not correct. ");
+						
+						if(day.contains("\'") || day.contains("\"") || month.contains("\'") || month.contains("\""))
+							throw new SQLDataException("Day or Month may not contain single quotes. ");
+						
+						db = day.trim() + "-" + month.trim() + "-" + yr;										
+					}
+					catch(NumberFormatException e){
+						System.out.println("Invalid entry. " + e + " Try again. \n");
+						dw131 = 1;
+					}
+					
+				}while(dw131!=0);
+
+				try{
+					
+					stmt.executeUpdate("insert into uha_applicant_family (applicant_id, first_name, last_name, relation, dob) "
+							+ " values ('" + app_id + "', '" + fn.trim() + "', '" + ln.trim() + "', '" + rn.trim() + "', '" + db + "')");
+					System.out.println("Family member has been added. ");
+				}
+				catch(SQLException e){
+					System.out.println("Invalid entry " + e);
+					dw13 = 1;
+				}
+			}
+
+		}while(dw13!=0);
+	}
+	
+	public void updateFamily(String app_id, String app_name) throws SQLException{
+		int dw14 = 0;
+		
+		do{
+			dw14 = 0;
+			
+			ResultSet rset = stmt.executeQuery ("SELECT * FROM uha_applicant_family where applicant_id = '" + app_id + "' ");
+			int nfm = 0;
+			while(rset.next()){
+				nfm++;
+				if(nfm==1){
+					System.out.println("Enter number of family member you want to edit: ");
+				}
+				System.out.println(nfm + ". " + rset.getString(4) + " " + rset.getString(5));
+			}
+			
+			if(nfm==0){
+				System.out.println("There are no family members listed. ");
+				dw14 = 2;
+				break;
+			}
+			
+			rset.beforeFirst();
+			
+			String fm = "";
+			fm = scn.nextLine();
+			int fmn = 0;
+			
+			try{
+				fmn = Integer.parseInt(fm);
+				if(fmn < 1 || fmn > nfm){
+					dw14 = 1;
+					throw new NumberFormatException("Invalid entry. Try again. ");
+				}
+			}
+			catch(NumberFormatException e){
+				System.out.println("Invalid entry. try again. ");
+				dw14 = 1;
+			}
+
+			if(dw14!=1){
+				int p = 0;
+				String fmid = "";
+				while(rset.next()){
+					p++;
+					if(p==fmn){
+						fmid = rset.getString(6);
+						break;
+					}
+				}
+				
+				int dw141 = 0;
+				do{
+					dw141 = 0;
+					System.out.println("To remove the family member, type 0. \nTo update: 1. Name 2. Relation 3. DOB ");
+					String pp = scn.nextLine();
+					int cho = -1;
+					
+					try{
+						cho = Integer.parseInt(pp);
+					}
+					catch(NumberFormatException e){
+						System.out.println("Invalid entry. Try again. ");
+						dw141 = 1;
+						continue;
+					}
+					
+					switch(cho){
+					case 0:
+						stmt.executeUpdate("delete from uha_applicant_family where applicant_id = '" + app_id + "' and family_member_id = '" + fmid + "' ");
+						System.out.println("The family member has been deleted. ");
+						break;
+					case 1:
+						int dw142 = 0;
+						do{
+							dw142 = 0;
+							String fn = "", ln = "";
+							System.out.print("Enter first name: ");
+							fn = scn.nextLine();
+							System.out.print("Enter last name: ");
+							ln = scn.nextLine();
+							
+							if(fn.contains("\'") || fn.contains("\"") || ln.contains("\'") || ln.contains("\"")){
+								System.out.println("Names may not contain single quotes. ");
+								dw142 = 1;
+							}
+							if(dw142!=1){
+								stmt.executeUpdate("update uha_applicant_family set first_name = '" + fn.trim() + 
+													"', last_name = '" + ln.trim() + "' where applicant_id = '" + app_id + 
+													"' and family_member_id = '" + fmid + "' ");
+								System.out.println("Name has been updated. ");
+							}
+
+						}while(dw142!=0);
+						
+						break;
+					case 2:
+						int dw143 = 0;
+						do{
+							dw143 = 0;
+							System.out.print("Enter Relation: ");
+							String rl = scn.nextLine();
+							if(rl.contains("\'") || rl.contains("\"")){
+								System.out.println("Relation may not contain single quotes. ");
+								dw143 = 1;
+							}
+							if(dw143!=1){
+								stmt.executeUpdate("update uha_applicant_family set relation = '" + rl.trim() +
+										"' where applicant_id = '" + app_id + "' and family_member_id = '" + fmid + "' ");
+								System.out.println("Relation has been updated. ");										
+							}
+							
+						}while(dw143!=0);
+						
+						break;
+					case 3:
+						int dw144 = 0;
+						do{
+							dw144 = 0;
+							String day = "", month = "";
+							System.out.print("Enter 2 digit day: ");
+							day = scn.nextLine();
+							System.out.print("Enter 3 letter month: ");
+							month = scn.nextLine();
+							System.out.print("Enter 4 digit year: ");
+							String year = scn.nextLine();
+							
+							try{
+								int yr = Integer.parseInt(year);
+								if(yr<1900 || yr>2015)
+									throw new SQLDataException("year is not correct. ");
+								
+								if(day.contains("\'") || day.contains("\"") || month.contains("\'") || month.contains("\""))
+									throw new SQLDataException("Day or Month may not contain single quotes. ");
+								
+								String db = day.trim() + "-" + month.trim() + "-" + yr;										
+								
+								stmt.executeUpdate("update uha_applicant_family set dob = '" + db + 
+										"' where applicant_id = '" + app_id + "' and family_member_id = '" + fmid + "' ");
+								System.out.println("DOB has been updated. ");
+							}
+							catch(NumberFormatException e){
+								System.out.println("Invalid entry. Try again. \n");
+								dw144 = 1;
+							}
+							catch(SQLDataException e){
+								System.out.println("Invalid entry: " + e + " Try again. \n");
+								dw144 = 1;
+							}
+							
+						}while(dw144!=0);
+
+						break;
+					default:
+						System.out.println("Invalid entry. Try again. ");
+						dw141 = 1;
+					}
+				}while(dw141!=0);
+			}
+		}while(dw14!=0);
+	}
+	
 }
