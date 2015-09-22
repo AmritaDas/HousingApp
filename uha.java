@@ -3711,4 +3711,579 @@ public class uha {
 		}while(dw14!=0);
 	}
 	
+	public void addNextOfKin(String app_id, String app_name) throws SQLException{
+		int dw15 = 0;
+		do{
+			dw15 = 0;
+			
+			System.out.print("Enter Next of kin's first name: ");
+			String fn = scn.nextLine();
+			System.out.print("Enter Next of kin's last name: ");
+			String ln = scn.nextLine();
+			
+			if(fn.contains("\'") || fn.contains("\"") || ln.contains("\'") || ln.contains("\"")){
+				System.out.println("Names may not contain single quotes. ");
+				dw15 = 1;
+				continue;
+			}
+
+			if(fn.trim().isEmpty() || ln.trim().isEmpty()){
+				System.out.println("Names may not be null. ");
+				dw15 = 1;
+				continue;
+			}
+			
+			int dw150 = 0;
+			String rn = "";
+			do{
+				dw150 = 0;
+				System.out.print("Enter Next of kin's relation to you: ");
+				rn = scn.nextLine();
+				
+				if(rn.contains("\'") || rn.contains("\"")){
+					System.out.println("Relation may not contain single quotes. ");
+					dw150 = 1;
+				}
+			}while(dw150!=0);
+
+			int dw151 = 0;
+			long p = 0;
+			do{
+				dw151 = 0;
+				String ph = "";
+				System.out.print("Enter Next of kin's phone no: ");
+				ph = scn.nextLine();
+				try{
+					p = Long.parseLong(ph);
+				}
+				catch(NumberFormatException e){
+					System.out.println("Invalid entry. Try again. ");
+					dw151 = 1;
+				}
+			}while(dw151!=0);
+			
+			int dw152 = 0;
+			String st = "", ct = "", pc = "", cn = "";
+			int ptc = 0;
+			do{
+				dw152 = 0;
+				System.out.print("Enter street: ");
+				st = scn.nextLine();
+				System.out.print("Enter city: ");
+				ct = scn.nextLine();
+				System.out.print("Enter postcode: ");
+				pc = scn.nextLine();
+				System.out.print("Enter country: ");
+				cn = scn.nextLine();
+				
+				try{
+					ptc = Integer.parseInt(pc);
+					
+					if(st.contains("\'") || st.contains("\"") || ct.contains("\'") || ct.contains("\"")){
+						System.out.println("Address may not contain single quotes. ");
+						dw152 = 1;
+					}
+				}
+				catch(NumberFormatException e){
+					System.out.println("Invalid postcode. Try again. ");
+					dw152 = 1;
+				}
+			}while(dw152!=0);
+			
+			if(dw15!=1){
+				try{
+					stmt.executeUpdate("insert into uha_applicant_next_of_kin (applicant_id, first_name, last_name, relation, " +
+							" phone_no, street, city, postcode, country) values ('" + app_id + "', '" + fn.trim() + "', '" + ln.trim() +  
+							"', '" + rn.trim() + "', '" + p + "', '" + st.trim() + "', '" + ct.trim() + "', '" + ptc + "', '" + cn + "')");
+					System.out.println("Next of kin has been added. ");
+				}
+				catch(SQLDataException e){
+					System.out.println("Invalid entry: " + e + " Try again. ");
+					dw15 = 1;
+				}
+				catch(SQLIntegrityConstraintViolationException e){
+					System.out.println("Invalid entry. " + e + " Try again. ");
+					dw15 = 1;
+				}
+				catch(SQLException e){
+					System.out.println("Invalid entry " + e);
+					dw15 = 1;
+				}
+			}
+		
+		}while(dw15!=0);
+	}
+	
+	public void updateNextOfKin(String app_id, String app_name) throws SQLException{
+		int dw16 = 0;
+		do{
+			dw16 = 0;
+			ResultSet rset = stmt.executeQuery ("SELECT * FROM uha_applicant_next_of_kin where applicant_id = '" + app_id + "' ");
+			int nfm = 0;
+			while(rset.next()){
+				nfm++;
+				if(nfm==1){
+					System.out.println("Enter number of next of kin you want to edit: ");
+				}
+				System.out.println(nfm + ". " + rset.getString(7) + " " + rset.getString(8));
+			}
+			
+			if(nfm==0){
+				System.out.println("There are no next of kin listed. ");
+				dw16 = 2;
+				break;
+			}
+				
+			rset.beforeFirst();
+			
+			String fm = "";
+			fm = scn.nextLine();
+			int fmn = 0;
+			
+			try{
+				fmn = Integer.parseInt(fm);
+				if(fmn < 1 || fmn > nfm){
+					dw16 = 1;
+					throw new NumberFormatException("Invalid entry. Try again. ");
+				}
+			}
+			catch(NumberFormatException e){
+				System.out.println("Invalid entry. try again. ");
+				dw16 = 1;
+			}
+
+			if(dw16!=1){
+				int p = 0;
+				String fmid = "";
+				while(rset.next()){
+					p++;
+					if(p==fmn){
+						fmid = rset.getString(9);
+						break;
+					}
+				}
+				
+				int dw161 = 0;
+				do{
+					dw161 = 0;
+					System.out.println("To remove the next of kin member, type 0. \nTo update: 1. Name 2. Relation 3. Phone 4. Address ");
+					String pp = scn.nextLine();
+					int cho = -1;
+					
+					try{
+						cho = Integer.parseInt(pp);
+					}
+					catch(NumberFormatException e){
+						System.out.println("Invalid entry. Try again. ");
+						dw161 = 1;
+						continue;
+					}
+					
+					switch(cho){
+					case 0:
+						stmt.executeUpdate("delete from uha_applicant_next_of_kin where applicant_id = '" + app_id + "' and next_of_kin_id = '" + fmid + "' ");
+						System.out.println("The next of kin member has been deleted. ");
+						break;
+					case 1:
+						int dw162 = 0;
+						do{
+							dw162 = 0;
+							String fn = "", ln = "";
+							System.out.print("Enter first name: ");
+							fn = scn.nextLine();
+							System.out.print("Enter last name: ");
+							ln = scn.nextLine();
+							
+							if(fn.contains("\'") || fn.contains("\"") || ln.contains("\'") || ln.contains("\"")){
+								System.out.println("Names may not contain single quotes. ");
+								dw162 = 1;
+							}
+							if(dw162!=1){
+								stmt.executeUpdate("update uha_applicant_next_of_kin set first_name = '" + fn.trim() + "', last_name = '" + ln.trim() + 
+										"' where applicant_id = '" + app_id + "' and next_of_kin_id = '" + fmid + "' ");
+								System.out.println("Name has been updated. ");
+							}
+
+						}while(dw162!=0);
+						
+						break;
+					case 2:
+						int dw163 = 0;
+						do{
+							dw163 = 0;
+							System.out.print("Enter Relation: ");
+							String rl = scn.nextLine();
+							if(rl.contains("\'") || rl.contains("\"")){
+								System.out.println("Relation may not contain single quotes. ");
+								dw163 = 1;
+							}
+							if(dw163!=1){
+								stmt.executeUpdate("update uha_applicant_next_of_kin set relation = '" + rl.trim() +
+										"' where applicant_id = '" + app_id + "' and next_of_kin_id = '" + fmid + "' ");
+								System.out.println("Relation has been updated. ");										
+							}
+							
+						}while(dw163!=0);
+						
+						break;
+
+					case 3:
+						int dw164 = 0;
+						do{
+							dw164 = 0;
+							String ph = "";
+							System.out.print("Enter phone no: ");
+							ph = scn.nextLine();
+							
+							try{
+								long pq = Long.parseLong(ph);
+								
+								stmt.executeUpdate("update uha_applicant_next_of_kin set phone_no = '" + pq +
+										"' where applicant_id = '" + app_id + "' and next_of_kin_id = '" + fmid + "' ");
+								System.out.println("Phone no has been updated. ");
+							}
+							catch(NumberFormatException e){
+								System.out.println("Invalid entry. Try again. ");
+								dw164 = 1;
+							}
+							catch(SQLDataException e){
+								System.out.println("Invalid entry: " + e + " Try again. ");
+								dw164 = 1;
+							}
+							catch(SQLIntegrityConstraintViolationException e){
+								System.out.println("Invalid entry. Try again. ");
+								dw164 = 1;
+							}
+						}while(dw164!=0);
+
+						break;
+					
+					case 4:
+						int dw165 = 0;
+						do{
+							dw165 = 0;
+							System.out.print("Enter street: ");
+							String st = scn.nextLine();
+							System.out.print("Enter city: ");
+							String ct = scn.nextLine();
+							System.out.print("Enter postcode: ");
+							String pc = scn.nextLine();
+							System.out.print("Enter country: ");
+							String cn = scn.nextLine();
+							
+							try{
+								int ptc = Integer.parseInt(pc);
+								
+								if(st.contains("\'") || st.contains("\"") || ct.contains("\'") || ct.contains("\"")){
+									System.out.println("Address may not contain single quotes. ");
+									dw165 = 1;
+								}
+								if(dw165!=1){
+									stmt.executeUpdate("update uha_applicant_next_of_kin set street = '" + st.trim() + 
+														"', city = '" + ct.trim() + "', postcode = '" + ptc + "', country = '" + cn + 
+														"' where applicant_id = '" + app_id + "' and next_of_kin_id = '" + fmid + "' ");
+									System.out.println("Address has been updated. ");
+								}
+								
+							}
+							catch(NumberFormatException e){
+								System.out.println("Invalid postcode. Try again. \n");
+								dw165 = 1;
+							}
+							catch(SQLDataException e){
+								System.out.println("Invalid postcode. Try again. \n");
+								dw165 = 1;
+							}
+							catch(SQLIntegrityConstraintViolationException e){
+								System.out.println("Invalid postcode. Try again. \n");
+								dw165 = 1;
+							}
+						}while(dw165!=0);
+						
+						break;
+						
+					default:
+						System.out.println("Invalid entry. Try again. ");
+						dw161 = 1;
+					}
+					
+				}while(dw161!=0);
+			}
+
+		}while(dw16!=0);
+	}
+
+	public void Maintenance(String app_id, String app_name, int user_type) throws SQLException{
+
+		int mark, choice=0;
+		if(user_type==3) {	//Supervisor
+			System.out.println("Supermode");
+		}
+		else{
+			do{
+				mark=0;	
+					System.out.println("\n1. New Ticket\n2. View Ticket Status\n3. Back");
+					try{
+						choice = Integer.parseInt(scn.nextLine());
+					}
+					catch(NumberFormatException e){
+						System.out.println("Invalid choice. Try again. ");
+						mark = 1;
+					}
+					if(mark!=1){
+						if(choice<1||choice>3){
+							System.out.println("Invalid Choice. Try Again!"); mark=1;
+						}
+						else{
+							switch(choice){
+								case 1: //New ticket
+									int choiceTicketType=0, markTicketType, markDesc;
+									String description="", location="", ticketType="", raisedDate="5-APR-2010";
+									do{
+										markTicketType=0;
+										System.out.println("\nSelect type:\n1. Water\n2. Electricty\n3. Appliances\n4. Internet\n5. Cleaning\n6. Miscellaneous");
+										try{
+											choiceTicketType = Integer.parseInt(scn.nextLine());
+										}
+										catch(NumberFormatException e){
+											System.out.println("Invalid choice. Try again. ");
+											markTicketType = 1;
+										}
+										if(markTicketType!=1){
+											if(choiceTicketType<1||choiceTicketType>6){
+												System.out.println("Invalid Choice. Try Again"); 
+												markTicketType=1;
+											}
+											else{
+												switch(choiceTicketType){
+												case 1: ticketType = "WATER"; break;
+												case 2: ticketType = "ELECTRICITY"; break;
+												case 3: ticketType = "APPLIANCES"; break;
+												case 4: ticketType = "INTERNET"; break;
+												case 5: ticketType = "CLEANING"; break;
+												case 6: ticketType = "MISCELLANEOUS";
+												}
+												do{
+													markDesc=0;
+													System.out.println("\nEnter Description(200 char max): ");
+													description = scn.nextLine();
+													if(description.length()>200){
+														System.out.println("Length must be less than 200 characters.");
+														markDesc=1;
+													}
+													if(markDesc!=1){
+														System.out.println("\nEnter location: ");
+														location = scn.nextLine();
+														DateFormat df = new SimpleDateFormat("dd-MMM-yyyy");
+														Date dateobj = new Date();
+														raisedDate = df.format(dateobj);
+														//Add to sql
+														String query = "insert into UHA_TICKET(TICKET_TYPE,RAISED_BY,RAISED_DATE,LOCATION,TICKET_DESCRIPTION) values('" + ticketType + "','" + app_id + "','" + raisedDate + "','" + location + "','" + description + "')";
+														stmt.executeUpdate(query);
+														System.out.println("\nTicket has been added\n");
+													}
+												}while(markDesc==1);
+											}
+										}
+									}while(markTicketType==1);
+									break;
+								case 2:	//View Tickets
+									int markViewTicket, choiceViewTicket=0;
+									//stmt.setFetchSize(200);
+									ResultSet rset= stmt.executeQuery("select TICKET_NO from uha_ticket where RAISED_BY = '" + app_id + "' order by severity asc");
+									//rset.setFetchSize(200);
+				
+									int i=1;
+									while(rset.next()){
+										System.out.println(i + ". TICKET " + rset.getString(1));
+										i++;
+									}
+									System.out.println("0. Back ");
+									do{
+										markViewTicket = 0;
+										try{
+											choiceViewTicket = Integer.parseInt(scn.nextLine());
+										}
+										catch(NumberFormatException e){
+											System.out.println("Invalid choice. Try again. ");
+											markViewTicket = 1;
+										}
+										if(markViewTicket!=1){
+											if(choiceViewTicket<0 || choiceViewTicket>=i){
+												System.out.println("Invalid choice. Try again. ");
+												markViewTicket = 1;
+											}
+											else if(choiceViewTicket==0)
+												break;
+											else{
+												rset = stmt.executeQuery("select TICKET_NO,STATUS,RAISED_DATE,TICKET_TYPE,SEVERITY,LOCATION,TICKET_DESCRIPTION from uha_ticket where RAISED_BY = '" + app_id + "' order by severity asc");
+												for(int j=0;j<choiceViewTicket;j++)
+													rset.next();
+												System.out.println("Ticket " + rset.getString(1) +":");
+												System.out.println("Status: " + rset.getString(2));
+												System.out.println("Raised Date: " + rset.getString(3).substring(0, 11));
+												System.out.println("Ticket Type: " + rset.getString(4));
+												System.out.println("Severity: " + rset.getString(5));
+												String lc = rset.getString(6)!=null?rset.getString(6):" ";
+												System.out.println("Location: " + lc);
+												System.out.println("Description: " + rset.getString(7));
+												System.out.println("\nEnter number to view another ticket or 0 to go back");
+												markViewTicket=1;
+												rset.close();
+											}
+										}
+									}while(markViewTicket==1);
+									break;
+								case 3:
+									return;
+							}
+						}
+					}
+					mark=1;
+			} while (mark==1);
+		}
+	}
+	
+	public void ViewNewLeasesasSupervisor(String app_id, String app_name) throws SQLException{
+		int markViewLease , choiceViewLease=0; String choiceYN = "Y";
+		ResultSet rset = stmt.executeQuery("select lease_no from uha_lease where request_status = 'PENDING'");
+		int i= 1;
+		while(rset.next()){
+			System.out.println(i+ ".LEASE NUMBER " + rset.getString(1));
+			i++;
+		}
+		System.out.println(" 0. Back "); 
+		do{
+			markViewLease = 0;
+			try{
+				choiceViewLease = Integer.parseInt(scn.nextLine());
+			}
+			catch(NumberFormatException e){
+				System.out.println("Invalid choice. Try again. ");
+				markViewLease = 1;
+			}
+			if(markViewLease!=1){
+				if(choiceViewLease<0 || choiceViewLease>=i ){
+					System.out.println("Invalid choice. Try again. 1");
+					markViewLease = 1;
+				}
+				else if(choiceViewLease==0)
+					break;
+				else{
+					rset = stmt.executeQuery("select LEASE_NO,DURATION,APPLICANT_NO,PLACE_NO,ROOM_NO,APARTMENT_NO,ADDRESS_ID,SECURITY_DEPOSIT,ENTER_DATE,LEAVE_DATE,PAYMENT_SCHEDULE_OPTION,REQUEST_STATUS,APARTMENT_TYPE,TOTAL_RENT,REQUESTED_ON from uha_lease where request_status = 'PENDING'"  );
+				    for(int j=0;j<choiceViewLease;j++)
+				    	rset.next();
+				    System.out.println("Lease number "+":" + rset.getString(1) );
+				    String Lease = rset.getString(1);
+				    System.out.println("Duration in months "+":" +  rset.getString(2) );
+				    System.out.println("Place number "+":" +  rset.getString(3));
+				    System.out.println("Applicant number "+":" +  rset.getString(4));
+				    System.out.println("Room number "+ ":" + rset.getString(5)+ ":");
+				    System.out.println("Apartment number "+ ":" + rset.getString(6));
+				    System.out.println("Address ID "+":" +  rset.getString(7));
+				    System.out.println("Security deposit "+ ":" + rset.getString(8));
+				    System.out.println("Enter date "+":" +  rset.getString(9));
+				    System.out.println("Leave date"+":" +  rset.getString(10));
+				    System.out.println("Payment schedule option "+":" +  rset.getString(11));
+				    System.out.println("Request status "+":" +  rset.getString(12));
+				    System.out.println("Apartement type "+":" +  rset.getString(13));
+				    System.out.println("Total rent"+ ":" + rset.getString(14));
+				    System.out.println("Requested on "+ ":" + rset.getString(15));				 
+				    System.out.println("Enter number to view another lease or 0 to go back");
+				    markViewLease=1;
+					int choice=0;
+					do{
+						choice= 0;
+						System.out.println("To approve press y To reject press N to go back press 0");
+						String mm = scn.nextLine();
+						if(mm.compareToIgnoreCase("y") == 0){
+							stmt3.executeUpdate("update uha_lease set REQUEST_STATUS='APPROVED' where LEASE_NO = '" + Lease + "'" );
+							stmt3.executeUpdate("delete from uha_lease_request where lease_no = '" + Lease + "' ");
+							System.out.println("Lease Approved press 0 to go back");
+							DateFormat df = new SimpleDateFormat("dd-MMM-yy");
+							Date dateobj = new Date();
+							String currDate = df.format(dateobj);
+							stmt2.executeUpdate("insert into uha_admin_action_on_lease(lease_no, staff_no, action_taken, action_date) values ('" + rset.getString(1) + "','" + app_id + "','APPROVED','" + currDate + "')");
+
+						}
+						else if (mm.compareToIgnoreCase("n")==0){
+							stmt3.executeUpdate("update uha_lease set PLACE_No=null, REQUEST_STATUS='DENIED' where LEASE_NO = '" + Lease + "' ");
+							System.out.println("Lease Denied press 0 to go back");
+							DateFormat df = new SimpleDateFormat("dd-MMM-yy");
+							Date dateobj = new Date();
+							String currDate = df.format(dateobj);
+							stmt2.executeUpdate("insert into uha_admin_action_on_lease(lease_no, staff_no, action_taken, action_date) values ('" + rset.getString(1) + "','" + app_id + "','DENIED','" + currDate + "')");
+						}
+						
+					}while(choice!=0);
+					rset.close();
+				}
+			}
+		}while(markViewLease==1);
+	
+	}
+
+	public void veiwTerminateLeaseRequestAsSupervisor(String app_id, String app_name)throws SQLException{
+		int markTerminateLease , choiceTerminateLease=0; 
+		ResultSet rset = stmt.executeQuery("select TERMINATION_REQUEST_NO from uha_lease_termination where request_status = 'PENDING'");
+		int i= 1;
+		while(rset.next()){
+			System.out.println(i+ ".TERMINATION REQUEST NUMBER " + rset.getString(1));
+			i++;
+		}
+		System.out.println(" 0. Back "); 
+		do{
+			markTerminateLease = 0;
+			try{
+				choiceTerminateLease = Integer.parseInt(scn.nextLine());
+			}
+			catch(NumberFormatException e){
+				System.out.println("Invalid choice. Try again. ");
+				markTerminateLease = 1;
+			}
+			if(markTerminateLease!=1){
+				if(choiceTerminateLease<0 || choiceTerminateLease>=i ){
+					System.out.println("Invalid choice. Try again. 1");
+					markTerminateLease = 1;
+				}
+				else if(choiceTerminateLease==0)
+					break;
+				else{
+					rset = stmt.executeQuery("select TERMINATION_REQUEST_NO, LEASE_NO, REQUEST_STATUS, TERMINATION_DATE,INSPECTION_DATE, INSPECTION_COMMENTS, FEES_LEVIED_ON_INSPECTION from uha_lease_termination where request_status = 'PENDING'"  );
+					for(int j=0;j<choiceTerminateLease;j++)
+				    	rset.next();
+					System.out.println("Termination request number "+": " + rset.getString(1) );
+					System.out.println("Lease Number "+": " + rset.getString(2) );
+				    System.out.println("Request status "+": " + rset.getString(3) );
+				    System.out.println("Termination date "+": " + rset.getString(4).substring(0, 11) );
+				    
+				    System.out.println("\nEnter 1 to approve or 0 to go back:");
+				    
+				    int what = scn.nextInt();
+				    
+				    String whattodo="";
+				    if(what==1)	whattodo = "APPROVED";
+				    else break;
+				    
+				    System.out.print("Enter inspection date(like 10-Apr-15): ");
+				    String inspectionDate = scn.next();
+				    System.out.print("Enter damage fees: ");
+				    int damageFees = Integer.parseInt(scn.next());
+				    
+				    stmt2.executeUpdate("update uha_lease_termination set request_status='APPROVED', inspection_date='"+ inspectionDate +"', fees_levied_on_inspection="+ damageFees + "where termination_request_no = '" + rset.getString(1) + "'");
+				    
+				    DateFormat df = new SimpleDateFormat("dd-MMM-yy");
+					Date dateobj = new Date();
+					String currDate = df.format(dateobj);
+					stmt2.executeUpdate("insert into uha_admin_action_on_lease(lease_no, staff_no, action_taken, action_date) values ('" + rset.getString(2) + "','" + app_id + "','APPROVED','" + currDate + "')");
+
+				    System.out.println("Enter number to view another lease or 0 to go back");
+				    markTerminateLease=1;
+					rset.close();
+				}
+					
+			}
+		}while(markTerminateLease==1);
+	}
+	
 }
