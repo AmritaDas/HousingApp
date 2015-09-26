@@ -677,6 +677,7 @@ public class uha {
 			
 		}while(m==0);
 	}
+
 	public void Housing(String app_id, String app_name, int user_type) throws SQLException{
 		int choice = 0, mark = 0;
 		do{
@@ -2177,7 +2178,7 @@ public class uha {
 			}
 		}while(mark != 0);
 	}
-
+	
 	public void RequestParking(String app_id, String app_name, int user_type) throws SQLException
 	{
 		int alloted = 0,mark=0, choice = 0, submit=0;
@@ -4286,4 +4287,254 @@ public class uha {
 		}while(markTerminateLease==1);
 	}
 	
+	public void viewMaintenanceTicket(String app_id, String app_name)throws SQLException{
+		int markMaintenance , choiceMaintenance=0; 
+		ResultSet rset2 = stmt2.executeQuery("select address_id from uha_apartment  where staff_no = '" + app_id + "' union select address_id from uha_housing_residence_hall where staff_no = '" + app_id + "' ");
+		rset2.next();
+		ResultSet rset = stmt3.executeQuery("select distinct ticket_no from (select ticket_no from uha_ticket A, uha_lease B where A.raised_by = B.applicant_no and address_id = '" + rset2.getString(1) + "'  and A.status = 'PENDING' order by A.severity_id ) ");
+		
+		int i= 1;
+		while(rset.next()){
+			System.out.println(i + " ticket number " + rset.getString(1));
+			i++;
+		}
+		
+		System.out.println(" 0. Back "); 
+		do{
+			System.out.println("Enter Maintenance ticket number ");
+			markMaintenance = 0;
+			try{
+				choiceMaintenance = Integer.parseInt(scn.nextLine());
+			}
+			catch(NumberFormatException e){
+				System.out.println("Invalid choice. Try again. ");
+				markMaintenance = 1;
+			}
+			if(markMaintenance!=1){
+				if(choiceMaintenance<0 || choiceMaintenance>=i ){
+					System.out.println("Invalid choice. Try again. 1");
+					markMaintenance = 1;
+				}
+				else if(choiceMaintenance==0)
+					break;
+				else{
+					rset.beforeFirst();
+					for(int j=0;j<choiceMaintenance;j++)
+				    	rset.next();
+				    System.out.println("Ticket number "+":" + rset.getString(1) );
+				    String Tnumber = rset.getString(1);
+					ResultSet rset01 = stmt2.executeQuery("select ticket_no,ticket_type,severity,raised_by,raised_date,location,status,ticket_description from uha_ticket where ticket_no = '" + Tnumber + "' ");
+					if(rset01.next()){
+					    System.out.println("Ticket type "+":" +  rset01.getString(2) );
+					    System.out.println("Severity "+":" +  rset01.getString(3));
+					    System.out.println("Raised by "+":" +  rset01.getString(4));
+					    System.out.println("Raised date "+ ":" + rset01.getString(5).substring(0, 11));
+					    System.out.println("Location "+ ":" + rset01.getString(6));
+					    System.out.println("Status "+":" +  rset01.getString(7));
+					    System.out.println("Ticket description "+":" +  rset01.getString(8));
+					}
+
+					markMaintenance=1;
+					rset01.close();
+					int choice=0;
+					do{
+						choice= 0;
+						System.out.println("To change the status of ticket to PROCESSED press y to go back press 0");
+						String mm = scn.nextLine();
+						if(mm.compareToIgnoreCase("0")==0) break;
+						if(mm.compareToIgnoreCase("y") == 0){
+							stmt.executeUpdate("update uha_ticket set STATUS='PROCESSED' where TICKET_NO = '" + Tnumber + "'" );
+							DateFormat df = new SimpleDateFormat("dd-MMM-yy hh:mm:ss a");
+							Date dateobj = new Date();
+							String currDate = df.format(dateobj);
+							stmt.executeUpdate("insert into uha_admin_action_on_ticket(ticket_no, staff_no, action_taken, action_datetime) values ('" + Tnumber + "','" + app_id + "','PROCESSED','" + currDate + "' )");
+
+							System.out.println("Ticket changed to processing ,press 0 to go back");
+							scn.nextLine();
+						}
+					
+						
+					}while(choice!=0);
+				}
+			}
+		}while(markMaintenance==1);
+		rset.close();
+	
+	}	
+	
+	public void viewParkingRequestAsSupervisor(String app_id, String app_name)throws SQLException{
+		
+		int markParking , choiceParking=0; String choiceYN = "Y";
+		Statement stmt2 = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
+		Statement stmt3 = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
+		Statement stmt4 = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
+		Statement stmt5 = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
+		Statement stmt6 = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
+		Statement stmt7 = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
+
+		ResultSet rset = stmt.executeQuery("select parking_request_no from uha_parking_request where request_status = 'PENDING' ");
+		int i= 1;
+		while(rset.next()){
+			System.out.println(i + " Select Parking request number " + rset.getString(1));
+			i++;
+		}
+		System.out.println(" 0. Back "); 
+		do{
+			markParking = 0;
+			try{
+				choiceParking = Integer.parseInt(scn.nextLine());
+			}
+			catch(NumberFormatException e){
+				System.out.println("Invalid choice. Try again. ");
+				markParking = 1;
+			}
+			if(markParking!=1){
+				if(choiceParking<0 || choiceParking>=i ){
+					System.out.println("Invalid choice. Try again. 1");
+					markParking	 = 1;
+				}
+				else if(choiceParking==0)
+					break;
+				else{
+					rset = stmt.executeQuery("select parking_request_no, lease_no, applicant_no, permit_id,request_status, vehicle_type, other_classification_accepted,not_near_housing_area_accepted,handicapped from uha_parking_request where request_status = 'PENDING'"  );
+				    for(int j=0;j<choiceParking;j++)
+				    	rset.next();
+				    System.out.println("Parking request number  "+":" + rset.getString(1) );
+				    String Pnumber = rset.getString(1);
+				    System.out.println("Lease number "+":" +  rset.getString(2) );
+				    System.out.println("Applicant number "+":" +  rset.getString(3));
+				    System.out.println("Permit ID "+":" +  rset.getString(4));
+				    System.out.println("Request Status"+ ":" + rset.getString(5)+ ":");
+				    System.out.println("Classification requested for parking "+ ":" + rset.getString(6));				 
+				    System.out.println("Is the applicant open to other classification as well?"+":" +  rset.getString(7));
+				    System.out.println("Parking if not closer to hosuing will be acceptable or not??"+ ":" + rset.getString(8));
+				    System.out.println("Handicapped? "+":" +  rset.getString(9)); 
+				    System.out.println("Enter number to view another ticket or 0 to go back");
+				    markParking=1;
+					int choice=0;
+					do{
+						choice= 0;
+						
+						
+						//Check if it can be approved:
+						String placeName = "";
+						int notfree = 0;
+						
+						
+						
+						
+						System.out.println("To approve the parking request, press y; to reject, press n; to go back press 0");
+						String mm = scn.nextLine();
+						if(mm.compareToIgnoreCase("y") == 0){
+							
+							ResultSet rset1 = stmt2.executeQuery("select address_id, enter_date, leave_date, request_status, applicant_no from uha_lease where lease_no = '"+rset.getString(2)+"'");
+							rset1.next();
+							String sd = rset1.getString(2).substring(0, 11);
+							String ed = rset1.getString(3).substring(0, 11);
+							System.out.println(sd + " " + ed);
+							//check if guest...set int guest=1;
+							int guest=0;
+
+							ResultSet rset2 = stmt3.executeQuery("select guest from uha_applicant where applicant_id='"+ rset1.getString(5)+"' ");
+							if(rset2.next()){
+								if(rset2.getString(1).compareToIgnoreCase("Y") == 0)
+								{	guest = 1; }
+							}
+							
+								if(guest!=1)
+								{
+							
+								ResultSet rset4 = stmt5.executeQuery("select lot_no from uha_housing_near_parking where address_id = '" + rset1.getString(1) + "'");
+								while (rset4.next())
+								{
+									ResultSet rset5 = stmt6.executeQuery("select spot_no from uha_parking_spot where lot_no = '" + rset4.getString(1) + "' and handicapped = '" + rset.getString(9) + "' and classification = '" + rset.getString(6) + "' ");
+									while(rset5.next())
+									{	
+										notfree = 0;
+										ResultSet rset6 = stmt7.executeQuery("select A.* from uha_parking_request A inner join uha_lease B on B.lease_no ='" + rset.getString(2) + "' and A.spot_id = '" + rset5.getString(1) +"' and A.request_status in ('INPROGRESS','APPROVED') and ((A.start_date<B.enter_date and A.end_date > B.leave_date) or (A.start_date>B.leave_date and A.end_date < B.leave_date) or (A.end_date > B.enter_date and A.end_date < B.leave_date) or (A.start_date > B.enter_date and A.start_date <B.leave_date))");
+										if(rset6.next()) {notfree = 1;}
+										if(notfree  == 0) 
+										{
+											DateFormat df = new SimpleDateFormat("dd-MMM-yy");
+											
+											//Spot is free...can give it to applicant
+											if(rset1.getString(4).compareToIgnoreCase("APPROVED") == 0){
+												stmt3.executeUpdate("update uha_parking_request set REQUEST_STATUS='APPROVED',spot_id = '"+rset5.getString(1)+"' where PARKING_REQUEST_NO = '" + Pnumber + "'" );
+											}
+											else
+											{
+												Date dateobj = new Date();
+												String currDate = df.format(dateobj);
+												
+												stmt3.executeUpdate("update uha_parking_request set REQUEST_STATUS='INPROGRESS',spot_id = '"+rset5.getString(1) +"', start_date = '"+ currDate +"' where PARKING_REQUEST_NO = '" + Pnumber + "'" );
+												stmt3.executeUpdate("insert into uha_admin_action_on_parking(parking_request_no, staff_no, action_taken, action_date) values ('" + Pnumber + "','" + app_id + "','APPROVED','" + currDate + "')");
+	
+											}
+											System.out.println("Request Approved");
+											System.out.println("Parking approved press 0 to go back");
+											notfree = 2;
+											break;
+										}
+									}
+									if(notfree == 2)
+										break;
+								}
+							}
+								
+							if(rset.getString(8).compareToIgnoreCase("Y") == 0 || guest == 1)
+							{	
+								if(notfree !=2)
+								{
+									ResultSet rset5 = stmt6.executeQuery("select spot_no from uha_parking_spot where lot_no = '7' and handicapped = '" + rset.getString(9) + "' and classification = '" + rset.getString(6) + "'");
+									while(rset5.next())
+									{	
+										notfree = 0;
+										ResultSet rset6 = stmt7.executeQuery("select A.* from uha_parking_request A inner join uha_lease B on B.lease_no ='" + rset.getString(2) + "' and A.spot_id = '" + rset5.getString(1) +"' and A.request_status in ('INPROGRESS','APPROVED') and ((A.start_date<B.enter_date and A.end_date > B.leave_date) or (A.start_date>B.leave_date and A.end_date < B.leave_date) or (A.end_date > B.enter_date and A.end_date < B.leave_date) or (A.start_date > B.enter_date and A.start_date <B.leave_date))");
+										if(rset6.next()) notfree = 1;
+										if(notfree  == 0)
+										{
+											DateFormat df = new SimpleDateFormat("dd-MMM-yy");
+											//Spot is free...can give it to applicant
+											if(rset1.getString(4).compareToIgnoreCase("APPROVED") == 0){
+												stmt.executeUpdate("update uha_parking_request set REQUEST_STATUS='APPROVED',spot_id = '"+rset5.getString(1)+ "' where PARKING_REQUEST_NO = '" + Pnumber + "'" );
+											}
+											else
+											{
+												Date dateobj = new Date();
+												String currDate = df.format(dateobj);
+												
+												stmt.executeUpdate("update uha_parking_request set REQUEST_STATUS='INPROGRESS',spot_id = '"+rset5.getString(1)+"', start_date = '"+ currDate +"' where PARKING_REQUEST_NO = '" + Pnumber + "'" );
+												stmt.executeUpdate("insert into uha_admin_action_on_parking(parking_request_no, staff_no, action_taken, action_date) values ('" + Pnumber + "','" + app_id + "','APPROVED','" + currDate + "')");
+											}
+											System.out.println("Request Approved");
+											
+											System.out.println("Parking approved press 0 to go back");
+											
+											notfree = 2;
+											break;
+										}
+									}
+									if(notfree == 2)
+										break;
+								}
+							}
+							else
+							{mm = "n";}
+							
+						}
+						if (mm.compareToIgnoreCase("n")==0){
+							stmt.executeUpdate("update uha_parking_request set REQUEST_STATUS='DENIED' where PARKING_REQUEST_NO = '" + Pnumber + "' ");
+							DateFormat df = new SimpleDateFormat("dd-MMM-yy");
+							Date dateobj = new Date();
+							String currDate = df.format(dateobj);
+							stmt.executeUpdate("insert into uha_admin_action_on_parking(parking_request_no, staff_no, action_taken, action_date) values ('" + Pnumber + "','" + app_id + "','DENIED','" + currDate + "')");
+
+							System.out.println("Parking Denied press 0 to go back");
+						}
+						
+					}while(choice!=0);
+				}
+			}
+		}while(markParking==1);
+	}
 }

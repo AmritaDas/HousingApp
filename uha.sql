@@ -963,7 +963,6 @@ Insert into SYSTEM.UHA_USERS (USER_ID,USER_TYPE,APPLICANT_ID,STAFF_NO,PASSWORD) 
   PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1
   BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
   TABLESPACE "SYSTEM" ;
-
 --------------------------------------------------------
 --  Constraints for Table UHA_ADMIN
 --------------------------------------------------------
@@ -1358,3 +1357,149 @@ Insert into SYSTEM.UHA_USERS (USER_ID,USER_TYPE,APPLICANT_ID,STAFF_NO,PASSWORD) 
   BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
   TABLESPACE "SYSTEM"  ENABLE;
   ALTER TABLE "SYSTEM"."UHA_USERS" ADD CONSTRAINT "UHA_USERS_TYPE_CHK" CHECK (USER_TYPE IN ('STUDENT', 'SUPERVISOR', 'GUEST')) ENABLE;
+--------------------------------------------------------
+--  Ref Constraints for Table UHA_ADMIN_ACTION_ON_LEASE
+--------------------------------------------------------
+
+  ALTER TABLE "SYSTEM"."UHA_ADMIN_ACTION_ON_LEASE" ADD CONSTRAINT "UHA_ACTION_ON_LEASE_ADMIN_FK" FOREIGN KEY ("STAFF_NO")
+	  REFERENCES "SYSTEM"."UHA_ADMIN" ("STAFF_NO") ENABLE;
+  ALTER TABLE "SYSTEM"."UHA_ADMIN_ACTION_ON_LEASE" ADD CONSTRAINT "UHA_ACTION_ON_LEASE_LEASE_FK" FOREIGN KEY ("LEASE_NO")
+	  REFERENCES "SYSTEM"."UHA_LEASE" ("LEASE_NO") ENABLE;
+--------------------------------------------------------
+--  Ref Constraints for Table UHA_ADMIN_ACTION_ON_PARKING
+--------------------------------------------------------
+
+  ALTER TABLE "SYSTEM"."UHA_ADMIN_ACTION_ON_PARKING" ADD CONSTRAINT "UHA_ACTION_ON_PARKING_ADMIN_FK" FOREIGN KEY ("STAFF_NO")
+	  REFERENCES "SYSTEM"."UHA_ADMIN" ("STAFF_NO") ENABLE;
+  ALTER TABLE "SYSTEM"."UHA_ADMIN_ACTION_ON_PARKING" ADD CONSTRAINT "UHA_ACTION_ON_PARK_PARKING_FK" FOREIGN KEY ("PARKING_REQUEST_NO")
+	  REFERENCES "SYSTEM"."UHA_PARKING_REQUEST" ("PARKING_REQUEST_NO") ENABLE;
+--------------------------------------------------------
+--  Ref Constraints for Table UHA_ADMIN_ACTION_ON_TICKET
+--------------------------------------------------------
+
+  ALTER TABLE "SYSTEM"."UHA_ADMIN_ACTION_ON_TICKET" ADD CONSTRAINT "UHA_ACTION_ON_TICKET_ADMIN_FK" FOREIGN KEY ("STAFF_NO")
+	  REFERENCES "SYSTEM"."UHA_ADMIN" ("STAFF_NO") ENABLE;
+  ALTER TABLE "SYSTEM"."UHA_ADMIN_ACTION_ON_TICKET" ADD CONSTRAINT "UHA_ACTION_ON_TICKET_UHA_FK" FOREIGN KEY ("TICKET_NO")
+	  REFERENCES "SYSTEM"."UHA_TICKET" ("TICKET_NO") ENABLE;
+--------------------------------------------------------
+--  Ref Constraints for Table UHA_APARTMENT
+--------------------------------------------------------
+
+  ALTER TABLE "SYSTEM"."UHA_APARTMENT" ADD CONSTRAINT "UHA_APARTMENT_UHA_HOUSING_FK" FOREIGN KEY ("ADDRESS_ID")
+	  REFERENCES "SYSTEM"."UHA_HOUSING_ADDRESS" ("ADDRESS_ID") ENABLE;
+  ALTER TABLE "SYSTEM"."UHA_APARTMENT" ADD CONSTRAINT "UHA_APARTMENT_UHA_STAFF_FK" FOREIGN KEY ("STAFF_NO")
+	  REFERENCES "SYSTEM"."UHA_ADMIN" ("STAFF_NO") ENABLE;
+--------------------------------------------------------
+--  Ref Constraints for Table UHA_APPLICANT_FAMILY
+--------------------------------------------------------
+
+  ALTER TABLE "SYSTEM"."UHA_APPLICANT_FAMILY" ADD CONSTRAINT "UHA_APPLICANT_FAMILY_FK" FOREIGN KEY ("APPLICANT_ID")
+	  REFERENCES "SYSTEM"."UHA_APPLICANT" ("APPLICANT_ID") ENABLE;
+--------------------------------------------------------
+--  Ref Constraints for Table UHA_APPLICANT_NEXT_OF_KIN
+--------------------------------------------------------
+
+  ALTER TABLE "SYSTEM"."UHA_APPLICANT_NEXT_OF_KIN" ADD CONSTRAINT "UHA_APPLICANT_NEXT_OF_KIN_FK1" FOREIGN KEY ("APPLICANT_ID")
+	  REFERENCES "SYSTEM"."UHA_APPLICANT" ("APPLICANT_ID") ENABLE;
+--------------------------------------------------------
+--  Ref Constraints for Table UHA_FAMILY_APARTMENT
+--------------------------------------------------------
+
+  ALTER TABLE "SYSTEM"."UHA_FAMILY_APARTMENT" ADD CONSTRAINT "UHA_FAMILY_APARTMENT_UHA_FK" FOREIGN KEY ("APARTMENT_NO")
+	  REFERENCES "SYSTEM"."UHA_APARTMENT" ("APARTMENT_NO") ENABLE;
+--------------------------------------------------------
+--  Ref Constraints for Table UHA_GENERAL_BEDROOM_APARTMENT
+--------------------------------------------------------
+
+  ALTER TABLE "SYSTEM"."UHA_GENERAL_BEDROOM_APARTMENT" ADD CONSTRAINT "UHA_GENERAL_BEDROOM_APART_FK1" FOREIGN KEY ("APARTMENT_NO")
+	  REFERENCES "SYSTEM"."UHA_APARTMENT" ("APARTMENT_NO") ENABLE;
+--------------------------------------------------------
+--  Ref Constraints for Table UHA_GUEST
+--------------------------------------------------------
+
+  ALTER TABLE "SYSTEM"."UHA_GUEST" ADD CONSTRAINT "UHA_GUEST_UHA_APPLICANT_FK" FOREIGN KEY ("APPROVAL_ID")
+	  REFERENCES "SYSTEM"."UHA_APPLICANT" ("APPLICANT_ID") ENABLE;
+--------------------------------------------------------
+--  Ref Constraints for Table UHA_HOUSING_NEAR_PARKING
+--------------------------------------------------------
+
+  ALTER TABLE "SYSTEM"."UHA_HOUSING_NEAR_PARKING" ADD CONSTRAINT "UHA_HOUSING_NEAR_PARKING__FK" FOREIGN KEY ("LOT_NO")
+	  REFERENCES "SYSTEM"."UHA_PARKING_LOT" ("LOT_NO") ENABLE;
+--------------------------------------------------------
+--  Ref Constraints for Table UHA_HOUSING_RESIDENCE_HALL
+--------------------------------------------------------
+
+  ALTER TABLE "SYSTEM"."UHA_HOUSING_RESIDENCE_HALL" ADD CONSTRAINT "UHA_HOUSING_RESIDENCE_HALL_FK" FOREIGN KEY ("ADDRESS_ID")
+	  REFERENCES "SYSTEM"."UHA_HOUSING_ADDRESS" ("ADDRESS_ID") ENABLE;
+  ALTER TABLE "SYSTEM"."UHA_HOUSING_RESIDENCE_HALL" ADD CONSTRAINT "UHA_RESIDENCE_MANAGER_FK" FOREIGN KEY ("STAFF_NO")
+	  REFERENCES "SYSTEM"."UHA_ADMIN" ("STAFF_NO") ENABLE;
+--------------------------------------------------------
+--  Ref Constraints for Table UHA_INVOICE
+--------------------------------------------------------
+
+  ALTER TABLE "SYSTEM"."UHA_INVOICE" ADD CONSTRAINT "UHA_INVOICE_UHA_APPLICANT_FK" FOREIGN KEY ("APPLICANT_NO")
+	  REFERENCES "SYSTEM"."UHA_APPLICANT" ("APPLICANT_ID") ENABLE;
+  ALTER TABLE "SYSTEM"."UHA_INVOICE" ADD CONSTRAINT "UHA_INVOICE_UHA_LEASE_FK" FOREIGN KEY ("LEASE_NO")
+	  REFERENCES "SYSTEM"."UHA_LEASE" ("LEASE_NO") ENABLE;
+--------------------------------------------------------
+--  Ref Constraints for Table UHA_LEASE
+--------------------------------------------------------
+
+  ALTER TABLE "SYSTEM"."UHA_LEASE" ADD CONSTRAINT "UHA_LEASE_UHA_APPLICANT_FK1" FOREIGN KEY ("APPLICANT_NO")
+	  REFERENCES "SYSTEM"."UHA_APPLICANT" ("APPLICANT_ID") ENABLE;
+--------------------------------------------------------
+--  Ref Constraints for Table UHA_LEASE_REQUEST
+--------------------------------------------------------
+
+  ALTER TABLE "SYSTEM"."UHA_LEASE_REQUEST" ADD CONSTRAINT "UHA_LEASE_REQUEST_APPLICANT_FK" FOREIGN KEY ("APPLICANT_NO")
+	  REFERENCES "SYSTEM"."UHA_APPLICANT" ("APPLICANT_ID") ENABLE;
+  ALTER TABLE "SYSTEM"."UHA_LEASE_REQUEST" ADD CONSTRAINT "UHA_LEASE_REQUEST_FK" FOREIGN KEY ("LEASE_NO")
+	  REFERENCES "SYSTEM"."UHA_LEASE" ("LEASE_NO") ENABLE;
+--------------------------------------------------------
+--  Ref Constraints for Table UHA_LEASE_TERMINATION
+--------------------------------------------------------
+
+  ALTER TABLE "SYSTEM"."UHA_LEASE_TERMINATION" ADD CONSTRAINT "UHA_LEASE_TERMINATION_UHA_FK1" FOREIGN KEY ("LEASE_NO")
+	  REFERENCES "SYSTEM"."UHA_LEASE" ("LEASE_NO") ENABLE;
+--------------------------------------------------------
+--  Ref Constraints for Table UHA_PARKING_REQUEST
+--------------------------------------------------------
+
+  ALTER TABLE "SYSTEM"."UHA_PARKING_REQUEST" ADD CONSTRAINT "UHA_PARKING_REQUEST_LEASE_FK" FOREIGN KEY ("LEASE_NO")
+	  REFERENCES "SYSTEM"."UHA_LEASE" ("LEASE_NO") ENABLE;
+  ALTER TABLE "SYSTEM"."UHA_PARKING_REQUEST" ADD CONSTRAINT "UHA_PARKING_REQUEST_SPOT_FK" FOREIGN KEY ("SPOT_ID")
+	  REFERENCES "SYSTEM"."UHA_PARKING_SPOT" ("SPOT_NO") ENABLE;
+  ALTER TABLE "SYSTEM"."UHA_PARKING_REQUEST" ADD CONSTRAINT "UHA_PARKING_REQ_APPLICANT_FK" FOREIGN KEY ("APPLICANT_NO")
+	  REFERENCES "SYSTEM"."UHA_APPLICANT" ("APPLICANT_ID") ENABLE;
+--------------------------------------------------------
+--  Ref Constraints for Table UHA_PARKING_SPOT
+--------------------------------------------------------
+
+  ALTER TABLE "SYSTEM"."UHA_PARKING_SPOT" ADD CONSTRAINT "UHA_PARKING_SPOT_UHA_PARK_FK1" FOREIGN KEY ("LOT_NO")
+	  REFERENCES "SYSTEM"."UHA_PARKING_LOT" ("LOT_NO") ENABLE;
+--------------------------------------------------------
+--  Ref Constraints for Table UHA_RESIDENCE_HALL_ROOM
+--------------------------------------------------------
+
+  ALTER TABLE "SYSTEM"."UHA_RESIDENCE_HALL_ROOM" ADD CONSTRAINT "UHA_RESIDENCE_HALL_NAME_FK" FOREIGN KEY ("RESIDENCE_HALL_NAME")
+	  REFERENCES "SYSTEM"."UHA_HOUSING_RESIDENCE_HALL" ("NAME") ENABLE;
+--------------------------------------------------------
+--  Ref Constraints for Table UHA_STUDENT
+--------------------------------------------------------
+
+  ALTER TABLE "SYSTEM"."UHA_STUDENT" ADD CONSTRAINT "UHA_STUDENT_UHA_APPLICANT_FK" FOREIGN KEY ("STUDENT_ID")
+	  REFERENCES "SYSTEM"."UHA_APPLICANT" ("APPLICANT_ID") ON DELETE CASCADE ENABLE;
+--------------------------------------------------------
+--  Ref Constraints for Table UHA_TICKET
+--------------------------------------------------------
+
+  ALTER TABLE "SYSTEM"."UHA_TICKET" ADD CONSTRAINT "UHA_TICKET_UHA_APPLICANT_FK" FOREIGN KEY ("RAISED_BY")
+	  REFERENCES "SYSTEM"."UHA_APPLICANT" ("APPLICANT_ID") ENABLE;
+--------------------------------------------------------
+--  Ref Constraints for Table UHA_USERS
+--------------------------------------------------------
+
+  ALTER TABLE "SYSTEM"."UHA_USERS" ADD CONSTRAINT "UHA_USERS_UHA_ADMIN_FK" FOREIGN KEY ("STAFF_NO")
+	  REFERENCES "SYSTEM"."UHA_ADMIN" ("STAFF_NO") ENABLE;
+  ALTER TABLE "SYSTEM"."UHA_USERS" ADD CONSTRAINT "UHA_USERS_UHA_APPLICANT_FK" FOREIGN KEY ("APPLICANT_ID")
+	  REFERENCES "SYSTEM"."UHA_APPLICANT" ("APPLICANT_ID") ENABLE;
